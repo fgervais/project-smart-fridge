@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "smart-fridge"
+version = "0.1.0"
+description = ""
+authors = ["Francois Gervais <francoisgervais@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+Adafruit-Blinka = "^6.10.2"
+adafruit-circuitpython-mlx90640 = "^1.2.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

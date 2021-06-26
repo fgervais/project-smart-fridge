@@ -1,0 +1,8 @@
+version: "3.4"
+services:
+  fridge:
+    build:
+      target: dev
+    image: fridge-dev
+    volumes:
+      - .:/app
