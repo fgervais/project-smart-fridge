@@ -18,4 +18,3 @@ services:
     # "devices: - /dev/bus/usb" would only allow access to devices present when
     # the container was started.
     privileged: true
-    command: ["python", "main.py"]
