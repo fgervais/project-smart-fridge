@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.6"
 Adafruit-Blinka = "^6.10.2"
 adafruit-circuitpython-mlx90640 = "^1.2.3"
+hidapi = "^0.10.1"
 
 [tool.poetry.dev-dependencies]
 
