@@ -1,5 +1,21 @@
 version: "3.4"
 services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.11
+    # expose:
+    #   - 1883
+    #   - 9001
+    volumes:
+      - /home/fgervais/container_data/mosquitto.conf:/mosquitto/config/mosquitto.conf
+  homeassistant:
+    image: homeassistant/home-assistant:2021.6.6
+    ports:
+      - 8123
+    volumes:
+      - /home/fgervais/container_data/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - mosquitto
   fridge:
     build:
       context: .
@@ -18,3 +34,5 @@ services:
     # "devices: - /dev/bus/usb" would only allow access to devices present when
     # the container was started.
     privileged: true
+    depends_on:
+      - mosquitto
