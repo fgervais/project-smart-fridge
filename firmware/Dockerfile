@@ -5,12 +5,12 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
 	build-essential \
 	libusb-1.0 \
 	libudev-dev
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 RUN pip install \
 	poetry==1.2.0a1
 WORKDIR /app
 COPY pyproject.toml poetry.lock ./
-RUN poetry install
+RUN POETRY_VIRTUALENVS_IN_PROJECT=true \
+	poetry install
 
 FROM base AS dev
 RUN apt-get update && apt-get -y install --no-install-recommends \
