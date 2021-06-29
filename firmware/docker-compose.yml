@@ -22,17 +22,21 @@ services:
     image: fridge
     environment:
       - BLINKA_MCP2221=1
-    volumes:
-      # See newly connected devices
-      - /dev:/dev
-      # Get udev events
-      - /run/udev/control:/run/udev/control
+      # Do not reset on device init
+      - BLINKA_MCP2221_RESET_DELAY=-1
+    devices:
+      - /dev/bus/usb
+    # volumes:
+    #   # See newly connected devices
+    #   - /dev:/dev
+    #   # Get udev events
+    #   - /run/udev/control:/run/udev/control
     # Allow PF_NETLINK
     # https://stackoverflow.com/questions/49687378/how-to-get-hosts-udev-events-from-a-docker-container
-    network_mode: host
+    # network_mode: host
     # Get rw access to newly connected devices
     # "devices: - /dev/bus/usb" would only allow access to devices present when
     # the container was started.
-    privileged: true
+    # privileged: true
     depends_on:
       - mosquitto
