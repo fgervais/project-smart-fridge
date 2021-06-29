@@ -10,7 +10,7 @@ services:
   homeassistant:
     image: homeassistant/home-assistant:2021.6.6
     ports:
-      - 8123
+      - 8123:8123
     volumes:
       - /home/fgervais/container_data/homeassistant/config:/config
       - /etc/localtime:/etc/localtime:ro
