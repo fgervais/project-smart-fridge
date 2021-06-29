@@ -37,4 +37,7 @@ print("MLX addr detected on I2C", [hex(i) for i in mlx.serial_number])
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 mlx.getFrame(frame)
-pprint(frame)
+# pprint(frame)
+
+while True:
+    time.sleep(3)
