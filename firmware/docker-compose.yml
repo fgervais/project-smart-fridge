@@ -2,9 +2,6 @@ version: "3.4"
 services:
   mosquitto:
     image: eclipse-mosquitto:2.0.11
-    # expose:
-    #   - 1883
-    #   - 9001
     volumes:
       - /home/fgervais/container_data/mosquitto.conf:/mosquitto/config/mosquitto.conf
   homeassistant:
@@ -26,17 +23,5 @@ services:
       - BLINKA_MCP2221_RESET_DELAY=-1
     devices:
       - /dev/bus/usb
-    # volumes:
-    #   # See newly connected devices
-    #   - /dev:/dev
-    #   # Get udev events
-    #   - /run/udev/control:/run/udev/control
-    # Allow PF_NETLINK
-    # https://stackoverflow.com/questions/49687378/how-to-get-hosts-udev-events-from-a-docker-container
-    # network_mode: host
-    # Get rw access to newly connected devices
-    # "devices: - /dev/bus/usb" would only allow access to devices present when
-    # the container was started.
-    # privileged: true
     depends_on:
       - mosquitto
