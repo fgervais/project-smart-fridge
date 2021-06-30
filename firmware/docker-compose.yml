@@ -1,9 +1,10 @@
 version: "3.4"
 services:
   mosquitto:
-    image: eclipse-mosquitto:2.0.11
-    volumes:
-      - /home/fgervais/container_data/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    build:
+      context: .
+      dockerfile: Dockerfile.mosquitto
+    image: mosquitto-config
   homeassistant:
     image: homeassistant/home-assistant:2021.6.6
     ports:
