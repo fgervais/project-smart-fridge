@@ -2,6 +2,8 @@ import adafruit_mlx90640
 import board
 import busio
 import logging
+import matplotlib.pyplot as plt
+import numpy as np
 import signal
 import time
 
@@ -38,6 +40,13 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 mlx.getFrame(frame)
 # pprint(frame)
+
+frame_array = np.array(frame)
+frame_array = np.reshape(frame_array, (-1, 32))
+
+fig, ax = plt.subplots()
+im = ax.imshow(frame_array)
+plt.savefig("portal/thermal.png")
 
 while True:
     time.sleep(3)

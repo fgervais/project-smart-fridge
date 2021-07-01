@@ -10,6 +10,7 @@ python = "^3.9"
 Adafruit-Blinka = "^6.10.2"
 adafruit-circuitpython-mlx90640 = "^1.2.3"
 hidapi = "^0.10.1"
+matplotlib = "^3.4.2"
 
 [tool.poetry.dev-dependencies]
 
