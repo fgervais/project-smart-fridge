@@ -25,7 +25,7 @@ def teardown():
 
 logging.basicConfig(
     format='[%(asctime)s] %(levelname)-8s %(message)s',
-    level=logging.DEBUG,
+    level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -42,16 +42,16 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 client = mqtt.Client()
 client.connect("mosquitto")
 
-fig, ax = plt.subplots()
-
 while True:
     mlx.getFrame(frame)
     frame_array = np.array(frame)
     frame_array = np.reshape(frame_array, (-1, 32))
 
-    im = ax.imshow(frame_array)
+    im = plt.imshow(frame_array)
+    plt.colorbar(im)
     image = io.BytesIO()
     plt.savefig(image, format = "png")
 
     client.publish("inside/thermal1", bytearray(image.getvalue()))
     client.loop(0.1)
+    plt.close()
