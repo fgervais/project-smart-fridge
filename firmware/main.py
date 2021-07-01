@@ -8,6 +8,7 @@ import numpy as np
 import paho.mqtt.client as mqtt
 import signal
 import time
+import traceback
 
 from pprint import pprint
 
@@ -43,7 +44,14 @@ client = mqtt.Client()
 client.connect("mosquitto")
 
 while True:
-    mlx.getFrame(frame)
+    while True:
+        try:
+            mlx.getFrame(frame)
+            break
+        except:
+            traceback.print_exc()
+            time.sleep(1)
+
     frame_array = np.array(frame)
     frame_array = np.reshape(frame_array, (-1, 32))
 
