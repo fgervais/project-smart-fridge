@@ -1,6 +1,6 @@
 [[package]]
 name = "adafruit-blinka"
-version = "6.10.2"
+version = "6.10.3"
 description = "CircuitPython APIs for non-CircuitPython versions of Python such as CPython on Linux and MicroPython."
 category = "main"
 optional = false
@@ -45,7 +45,7 @@ python-versions = "*"
 
 [[package]]
 name = "adafruit-platformdetect"
-version = "3.14.1"
+version = "3.14.2"
 description = "Platform detection for use by libraries like Adafruit-Blinka."
 category = "main"
 optional = false
@@ -117,12 +117,12 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.6"
-content-hash = "11794ebbfff4a2e18cde4a6739c7631af2570f1df5cbb60b2ac9d19898067326"
+python-versions = "^3.9"
+content-hash = "ac5b5ee1aa70f4b702a5167e0e57b28527b16a3347f3fbc03c68d38ff67c5738"
 
 [metadata.files]
 adafruit-blinka = [
-    {file = "Adafruit-Blinka-6.10.2.tar.gz", hash = "sha256:bebb590caedd0bd671bdaf53b71112541ad43225a2920c2e9fbcd73c5a2d6844"},
+    {file = "Adafruit-Blinka-6.10.3.tar.gz", hash = "sha256:f58f3e0a4d850662a2380d8c9f108a81b86493a218bf49043d5407b0caa8648c"},
 ]
 adafruit-circuitpython-busdevice = [
     {file = "adafruit-circuitpython-busdevice-5.0.6.tar.gz", hash = "sha256:9bb2934e90a151da8b7d9646b25c2ce0b3fd4853f8ba73e8faffedfd8315eda7"},
@@ -134,7 +134,7 @@ adafruit-circuitpython-register = [
     {file = "adafruit-circuitpython-register-1.9.5.tar.gz", hash = "sha256:bd292198fb61d0e65c5a08a5181144c77a6e400864d63a5360ab3d38072fa7c4"},
 ]
 adafruit-platformdetect = [
-    {file = "Adafruit-PlatformDetect-3.14.1.tar.gz", hash = "sha256:472d0e3614276aea4c416627ff74126a999ab8e5da54f8d619d20f7a6f22f90b"},
+    {file = "Adafruit-PlatformDetect-3.14.2.tar.gz", hash = "sha256:485a924cd2993044d17fd471483eac933015a717a9996f891bf82a660157d3a0"},
 ]
 adafruit-pureio = [
     {file = "Adafruit_PureIO-1.1.9.tar.gz", hash = "sha256:2caf22fb07c7f771d83267f331a76cde314723f884a9570ea6f768730c87a879"},
