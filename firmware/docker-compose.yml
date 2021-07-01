@@ -20,7 +20,7 @@ services:
     image: fridge
     environment:
       - BLINKA_MCP2221=1
-      # Do not reset on device init
+      # Negative number = Do not reset on device init
       - BLINKA_MCP2221_RESET_DELAY=-1
     devices:
       - /dev/bus/usb
