@@ -24,7 +24,5 @@ services:
       - BLINKA_MCP2221_RESET_DELAY=-1
     devices:
       - /dev/bus/usb
-    volumes:
-      - /home/fgervais/container_data:/app/portal
     depends_on:
       - mosquitto

@@ -1,9 +1,11 @@
 import adafruit_mlx90640
 import board
 import busio
+import io
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+import paho.mqtt.client as mqtt
 import signal
 import time
 
@@ -35,18 +37,21 @@ i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
 frame = [0] * 768
 mlx = adafruit_mlx90640.MLX90640(i2c)
 print("MLX addr detected on I2C", [hex(i) for i in mlx.serial_number])
-
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
-mlx.getFrame(frame)
-# pprint(frame)
-
-frame_array = np.array(frame)
-frame_array = np.reshape(frame_array, (-1, 32))
+client = mqtt.Client()
+client.connect("mosquitto")
 
 fig, ax = plt.subplots()
-im = ax.imshow(frame_array)
-plt.savefig("portal/thermal.png")
 
 while True:
-    time.sleep(3)
+    mlx.getFrame(frame)
+    frame_array = np.array(frame)
+    frame_array = np.reshape(frame_array, (-1, 32))
+
+    im = ax.imshow(frame_array)
+    image = io.BytesIO()
+    plt.savefig(image, format = "png")
+
+    client.publish("inside/thermal1", bytearray(image.getvalue()))
+    client.loop(0.1)
