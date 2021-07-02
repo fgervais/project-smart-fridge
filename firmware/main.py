@@ -21,7 +21,18 @@ def sigterm_handler(signal, frame):
 
 
 def teardown():
-    pass
+    try:
+        client.loop_stop()
+    except:
+        logger.exception("Could not stop MQTT client loop")
+        traceback.print_exc()
+
+    try:
+        client.disconnect()
+    except:
+        logger.exception("Could not disconnect MQTT client")
+        traceback.print_exc()
+
 
 
 logging.basicConfig(
@@ -42,6 +53,7 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 client = mqtt.Client()
 client.connect("mosquitto")
+client.loop_start()
 
 while True:
     while True:
@@ -60,6 +72,14 @@ while True:
     image = io.BytesIO()
     plt.savefig(image, format = "png")
 
-    client.publish("inside/thermal1", bytearray(image.getvalue()))
-    client.loop(0.1)
+    logger.debug("Waiting for publish")
+    try:
+        mqtt_mi.wait_for_publish()
+    except NameError as e:
+        pass
+    except:
+        logger.exception("Error waiting for publish")
+        traceback.print_exc()
+    logger.debug("Publishing")
+    mqtt_mi = client.publish("inside/thermal1", bytearray(image.getvalue()))
     plt.close()
