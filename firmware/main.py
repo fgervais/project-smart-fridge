@@ -55,6 +55,8 @@ client = mqtt.Client()
 client.connect("mosquitto")
 client.loop_start()
 
+plt.style.use("dark_background")
+
 while True:
     while True:
         try:
