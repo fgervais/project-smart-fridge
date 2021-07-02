@@ -6,11 +6,13 @@ services:
       dockerfile: Dockerfile.mosquitto
     image: mosquitto-config
   homeassistant:
-    image: homeassistant/home-assistant:2021.6.6
+    build:
+      context: .
+      dockerfile: Dockerfile.ha
+    image: home-assistant-config
     ports:
       - 8123:8123
     volumes:
-      - /home/fgervais/container_data/homeassistant/config:/config
       - /etc/localtime:/etc/localtime:ro
     depends_on:
       - mosquitto

@@ -1,0 +1,13 @@
+default_config:
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+mqtt:
+  broker: mosquitto
+
+camera:
+  - platform: mqtt
+    topic: inside/thermal1
