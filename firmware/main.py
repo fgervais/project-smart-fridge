@@ -107,5 +107,6 @@ while True:
             break
 
         temp = tmp117[i].temperature
+        client.publish(f"inside/tmp117/{i}", temp)
 
         logger.debug(f"Temperature{i}: {temp}°C")

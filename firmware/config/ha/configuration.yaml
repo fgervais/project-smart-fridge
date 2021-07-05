@@ -1,13 +1,19 @@
 default_config:
 
-mqtt:
-  broker: mosquitto
-
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
+mqtt:
+  broker: mosquitto
+
 camera:
   - platform: mqtt
     topic: inside/thermal1
+
+sensor:
+  - platform: mqtt
+    name: "Temperature"
+    state_topic: "inside/tmp117/0"
+    unit_of_measurement: "°C"
