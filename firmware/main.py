@@ -83,6 +83,7 @@ while True:
 
     frame_array = np.array(frame)
     frame_array = np.reshape(frame_array, (-1, 32))
+    frame_array = np.fliplr(frame_array)
 
     im = plt.imshow(frame_array)
     plt.colorbar(im)
