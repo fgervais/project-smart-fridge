@@ -63,10 +63,10 @@ for i in range(MAX_NUMBER_OF_TMP117):
     try:
         tmp117[i] = adafruit_tmp117.TMP117(i2c, 0x48 + i)
     except Exception as e:
-        print(e)
+        logger.info(e)
 
 if not any(tmp117):
-    print("No sensor detected")
+    logger.info("No sensor detected")
 
 client = mqtt.Client()
 client.connect("mosquitto")
@@ -81,7 +81,7 @@ while True:
             mlx.getFrame(frame)
             break
         except:
-            traceback.print_exc()
+            logger.debug("Could not read mlx frame", exc_info=1)
             time.sleep(1)
 
     frame_array = np.array(frame)
@@ -100,7 +100,6 @@ while True:
         pass
     except:
         logger.exception("Error waiting for publish")
-        traceback.print_exc()
     logger.debug("Publishing")
     mqtt_mi = client.publish("inside/thermal1", bytearray(image.getvalue()))
     plt.close()
