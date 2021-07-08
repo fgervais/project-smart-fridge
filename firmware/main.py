@@ -6,6 +6,7 @@ import io
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import paho.mqtt.client as mqtt
 import signal
 import time
@@ -44,7 +45,9 @@ logging.basicConfig(
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+
+if "DEBUG" in os.environ:
+    logger.setLevel(logging.DEBUG)
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 
