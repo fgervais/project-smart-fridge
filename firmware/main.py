@@ -109,7 +109,11 @@ while True:
         if not tmp117[i]:
             break
 
-        temp = tmp117[i].temperature
+        try:
+            temp = tmp117[i].temperature
+        except:
+            logger.exception(f"Error reading TMP117 ({i})")
+
         client.publish(f"inside/tmp117/{i}", round(temp, 2))
 
         logger.debug(f"Temperature{i}: {temp}°C")
