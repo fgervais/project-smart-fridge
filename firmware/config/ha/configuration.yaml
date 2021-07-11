@@ -14,10 +14,18 @@ camera:
 
 sensor:
   - platform: mqtt
-    name: "Temperature"
+    name: "Evaporator"
+    state_topic: "inside/tmp117/1"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Shelf 1"
     state_topic: "inside/tmp117/0"
     unit_of_measurement: "°C"
   - platform: mqtt
-    name: "Evaporator"
-    state_topic: "inside/tmp117/1"
+    name: "Shelf 2"
+    state_topic: "inside/tmp117/2"
+    unit_of_measurement: "°C"
+  - platform: mqtt
+    name: "Shelf 3"
+    state_topic: "inside/tmp117/3"
     unit_of_measurement: "°C"
