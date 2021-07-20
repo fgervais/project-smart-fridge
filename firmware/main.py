@@ -81,7 +81,7 @@ while True:
             mlx.getFrame(frame)
             break
         except:
-            logger.debug("Could not read mlx frame", exc_info=1)
+            logger.exception("Could not read mlx frame")
             time.sleep(1)
 
     frame_array = np.array(frame)
