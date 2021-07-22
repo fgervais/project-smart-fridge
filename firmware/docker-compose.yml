@@ -1,21 +1,5 @@
 version: "3.4"
 services:
-  mosquitto:
-    build:
-      context: .
-      dockerfile: Dockerfile.mosquitto
-    image: mosquitto-config
-  homeassistant:
-    build:
-      context: .
-      dockerfile: Dockerfile.ha
-    image: home-assistant-config
-    ports:
-      - 8123:8123
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - mosquitto
   fridge:
     build:
       context: .
@@ -24,7 +8,8 @@ services:
       - BLINKA_MCP2221=1
       # Negative number = Do not reset on device init
       - BLINKA_MCP2221_RESET_DELAY=-1
+      # - DEBUG=1
     devices:
       - /dev/bus/usb
-    depends_on:
-      - mosquitto
+    volumes:
+      - /run/avahi-daemon/socket:/run/avahi-daemon/socket

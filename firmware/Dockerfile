@@ -14,6 +14,7 @@ RUN POETRY_VIRTUALENVS_IN_PROJECT=true \
 
 FROM base AS dev
 RUN apt-get update && apt-get -y install --no-install-recommends \
+	libnss-mdns \
 	libusb-1.0
 WORKDIR /app
 COPY --from=build /app/.venv ./.venv/

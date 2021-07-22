@@ -69,7 +69,7 @@ if not any(tmp117):
     logger.info("No sensor detected")
 
 client = mqtt.Client()
-client.connect("mosquitto")
+client.connect("home.local")
 client.loop_start()
 
 plt.style.use("dark_background")
