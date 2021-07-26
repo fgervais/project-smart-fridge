@@ -2,6 +2,7 @@ import adafruit_mlx90640
 import adafruit_tmp117
 import board
 import busio
+import forensic
 import io
 import logging
 import matplotlib.pyplot as plt
@@ -73,6 +74,8 @@ client.connect("home.local")
 client.loop_start()
 
 plt.style.use("dark_background")
+
+forensic.register_debug_hook()
 
 
 while True:
