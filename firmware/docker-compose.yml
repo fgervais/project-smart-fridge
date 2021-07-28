@@ -13,3 +13,4 @@ services:
       - /dev/bus/usb
     volumes:
       - /run/avahi-daemon/socket:/run/avahi-daemon/socket
+    network_mode: "host"
