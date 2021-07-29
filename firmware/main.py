@@ -1,9 +1,11 @@
 import adafruit_mlx90640
 import adafruit_tmp117
+import asyncio
 import board
 import busio
 import forensic
 import io
+import kasa
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +19,7 @@ from pprint import pprint
 
 
 MAX_NUMBER_OF_TMP117 = 4
+KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
 
 
 # Used by docker-compose down
@@ -77,6 +80,15 @@ plt.style.use("dark_background")
 
 forensic.register_debug_hook()
 
+kasa_relay = None
+devices = asyncio.run(kasa.Discover.discover())
+for addr, dev in devices.items():
+    # asyncio.run(dev.update())
+    if dev.device_id == KASA_RELAY_DEVICE_ID:
+        kasa_relay = dev
+
+if not kasa_relay is None:
+    logger.info(f"Found relay: {kasa_relay}")
 
 while True:
     while True:
@@ -107,7 +119,6 @@ while True:
     mqtt_mi = client.publish("inside/thermal1", bytearray(image.getvalue()))
     plt.close()
 
-
     for i in range(MAX_NUMBER_OF_TMP117):
         if not tmp117[i]:
             break
@@ -120,3 +131,9 @@ while True:
         client.publish(f"inside/tmp117/{i}", round(temp, 2))
 
         logger.debug(f"Temperature{i}: {temp}°C")
+
+    logger.debug("Kasa update")
+    asyncio.run(kasa_relay.update())
+    logger.debug("Kasa publish")
+    for i in ["current", "voltage", "power"]:
+        client.publish(f"outside/relay/{i}", kasa_relay.emeter_realtime[i])
