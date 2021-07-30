@@ -43,11 +43,11 @@ def teardown():
         traceback.print_exc()
 
 
-
 logging.basicConfig(
-    format='[%(asctime)s] %(levelname)-8s %(message)s',
+    format="[%(asctime)s] %(levelname)-8s %(message)s",
     level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger = logging.getLogger(__name__)
 
 if "DEBUG" in os.environ:
@@ -106,7 +106,7 @@ while True:
     im = plt.imshow(frame_array)
     plt.colorbar(im)
     image = io.BytesIO()
-    plt.savefig(image, format = "png")
+    plt.savefig(image, format="png")
 
     logger.debug("Waiting for publish")
     try:
