@@ -136,4 +136,4 @@ while True:
     asyncio.run(kasa_relay.update())
     logger.debug("Kasa publish")
     for i in ["current", "voltage", "power"]:
-        client.publish(f"outside/relay/{i}", kasa_relay.emeter_realtime[i])
+        client.publish(f"outside/relay/{i}", round(kasa_relay.emeter_realtime[i], 2))
