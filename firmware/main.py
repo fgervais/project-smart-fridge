@@ -140,3 +140,7 @@ while True:
     power = min(power, 80.00)
     logger.debug("Kasa publish")
     client.publish(f"outside/relay/power", power)
+
+    kwh = kasa_relay.emeter_today
+    logger.debug(f"Energy (daily): {kwh} kWh")
+    client.publish(f"outside/relay/energy/daily", kwh)
