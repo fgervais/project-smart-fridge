@@ -134,8 +134,9 @@ while True:
 
     logger.debug("Kasa update")
     asyncio.run(kasa_relay.update())
-    logger.debug("Kasa publish")
     power = round(kasa_relay.emeter_realtime["power"], 2)
+    logger.debug(f"Power: {power} W")
     # Power peaks at ~800W on startup
     power = min(power, 80.00)
+    logger.debug("Kasa publish")
     client.publish(f"outside/relay/power", power)
