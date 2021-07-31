@@ -137,5 +137,5 @@ while True:
     logger.debug("Kasa publish")
     power = round(kasa_relay.emeter_realtime["power"], 2)
     # Power peaks at ~800W on startup
-    power = min(power, 100.00)
+    power = min(power, 80.00)
     client.publish(f"outside/relay/power", power)
