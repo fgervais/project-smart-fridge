@@ -7,13 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Adafruit-Blinka = "^6.10.2"
 adafruit-circuitpython-mlx90640 = "^1.2.3"
 hidapi = "^0.10.1"
 matplotlib = "^3.4.2"
 paho-mqtt = "^1.5.1"
 adafruit-circuitpython-tmp117 = "^1.0.4"
 python-kasa = "^0.4.0-dev.3"
+adafruit-blinka = {git = "https://github.com/fgervais/Adafruit_Blinka.git", rev = "multiple-mcp2221"}
 
 [tool.poetry.dev-dependencies]
 

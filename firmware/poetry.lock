@@ -1,15 +1,22 @@
 [[package]]
-name = "adafruit-blinka"
-version = "6.13.0"
+name = "Adafruit-Blinka"
+version = "6.13.1.dev12+g9447b81"
 description = "CircuitPython APIs for non-CircuitPython versions of Python such as CPython on Linux and MicroPython."
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
+develop = false
 
 [package.dependencies]
 Adafruit-PlatformDetect = ">=3.13.0"
 Adafruit-PureIO = ">=1.1.7"
 pyftdi = ">=0.40.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/fgervais/Adafruit_Blinka.git"
+reference = "multiple-mcp2221"
+resolved_reference = "9447b8134b55d8f04e5bfdd9997c20d3dcbd60ec"
 
 [[package]]
 name = "adafruit-circuitpython-busdevice"
@@ -309,12 +316,10 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a222e6dfc482c26d926f4a090b7177e8e6aaa2864a916b450e7a1dc30185d5e6"
+content-hash = "9e37747da02b5c4723ad4c58fc52418111e999e372a2ba9a834c63c2e7688fac"
 
 [metadata.files]
-adafruit-blinka = [
-    {file = "Adafruit-Blinka-6.13.0.tar.gz", hash = "sha256:acbcfb778dc5e37ad9ef0aa1e1998e597a99c8a2a08b0dda58c05681950ea1f2"},
-]
+Adafruit-Blinka = []
 adafruit-circuitpython-busdevice = [
     {file = "adafruit-circuitpython-busdevice-5.0.6.tar.gz", hash = "sha256:9bb2934e90a151da8b7d9646b25c2ce0b3fd4853f8ba73e8faffedfd8315eda7"},
 ]
