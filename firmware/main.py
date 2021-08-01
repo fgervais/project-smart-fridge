@@ -83,7 +83,6 @@ forensic.register_debug_hook()
 kasa_relay = None
 devices = asyncio.run(kasa.Discover.discover())
 for addr, dev in devices.items():
-    # asyncio.run(dev.update())
     if dev.device_id == KASA_RELAY_DEVICE_ID:
         kasa_relay = dev
 
