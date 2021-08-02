@@ -4,6 +4,7 @@ import asyncio
 import board
 import busio
 import forensic
+import hid
 import io
 import kasa
 import logging
@@ -20,6 +21,9 @@ from pprint import pprint
 
 MAX_NUMBER_OF_TMP117 = 4
 KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
+
+MCP2221_VID = 0x04D8
+MCP2221_PID = 0x00DD
 
 
 # Used by docker-compose down
@@ -55,7 +59,12 @@ if "DEBUG" in os.environ:
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 
-i2c = busio.I2C(board.SCL, board.SDA, frequency=800000)
+addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
+for address in addresses:
+    i2c_bus = busio.I2C(bus_id=address, frequency=800000)
+    # i2c_scan = i2c_bus.scan()
+    # logging.info(f"I2C devices found: {[hex(i) for i in i2c_scan]}")
+    i2c = i2c_bus
 
 frame = [0] * 768
 mlx = adafruit_mlx90640.MLX90640(i2c)
