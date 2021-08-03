@@ -32,11 +32,6 @@ like so:
 
 ![Inside Sensors](assets/img/inside-sensors.jpg)
 
-This is what the infrared sensor sees with a room temp can moved from left to
-right jumping from one row to the next.
-
-![MLX90640](assets/img/ir-view.jpg)
-
 ### Outside
 
 I installed one more `TMP117` a temperature sensors on the compressor.
@@ -59,3 +54,10 @@ how often the compressor starts, for how long, and how does it's temperature
 behave.
 
 Things of that nature so when I take control I have a sense of what the limits are.
+
+## IR view
+
+This is what the infrared sensor sees with a room temp can moved from left to
+right jumping from one row to the next.
+
+![MLX90640](assets/img/ir-view.jpg)
