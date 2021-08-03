@@ -32,6 +32,11 @@ like so:
 
 ![Inside Sensors](assets/img/inside-sensors.jpg)
 
+This is what the infrared sensor sees with a room temp can moved from left to
+right jumping from one row to the next.
+
+![MLX90640](assets/img/ir-view.jpg)
+
 ### Outside
 
 I installed one more `TMP117` a temperature sensors on the compressor.
@@ -44,5 +49,13 @@ I send all those sensor out to an Home Assistant instance through MQTT.
 
 ![Dashboard](assets/img/ha-overview.png)
 
-## Step 3 - Get a sense of how things are working with the default thermostat
+## Step 3 - Get a sense of how things are working
 
+We don't want to push things too far so fist we need to learn how the fridge is
+working when it does the control itself.
+
+I'm specifically interested how low/high the temperature gets at the evaporator,
+how often the compressor starts, for how long, and how does it's temperature
+behave.
+
+Things of that nature so when I take control I have a sense of what the limits are.
