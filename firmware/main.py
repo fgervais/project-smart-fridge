@@ -101,12 +101,14 @@ if not kasa_relay is None:
 while True:
     while True:
         try:
+            logger.debug("Getting frame")
             mlx.getFrame(frame)
             break
         except:
             logger.exception("Could not read mlx frame")
             time.sleep(1)
 
+    logger.debug("Converting frame to image")
     frame_array = np.array(frame)
     frame_array = np.reshape(frame_array, (-1, 32))
     frame_array = np.fliplr(frame_array)
@@ -123,7 +125,7 @@ while True:
         pass
     except:
         logger.exception("Error waiting for publish")
-    logger.debug("Publishing")
+    logger.debug("Frame publish")
     mqtt_mi = client.publish("inside/thermal1", bytearray(image.getvalue()))
     plt.close()
 
