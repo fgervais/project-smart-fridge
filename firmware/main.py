@@ -154,3 +154,6 @@ while True:
     kwh = kasa_relay.emeter_today
     logger.debug(f"Energy (daily): {kwh} kWh")
     client.publish(f"outside/relay/energy/daily", kwh)
+
+    logger.debug("Going to sleep")
+    time.sleep(2)
