@@ -5,18 +5,17 @@ import board
 import busio
 import forensic
 import hid
-import io
 import kasa
 import logging
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 import paho.mqtt.client as mqtt
 import signal
 import time
-import traceback
 
 from pprint import pprint
+
+from fridge import Fridge
 
 
 MAX_NUMBER_OF_TMP117 = 4
@@ -38,13 +37,11 @@ def teardown():
         client.loop_stop()
     except:
         logger.exception("Could not stop MQTT client loop")
-        traceback.print_exc()
 
     try:
         client.disconnect()
     except:
         logger.exception("Could not disconnect MQTT client")
-        traceback.print_exc()
 
 
 logging.basicConfig(
@@ -62,13 +59,10 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
     i2c_bus = busio.I2C(bus_id=address, frequency=800000)
-    # i2c_scan = i2c_bus.scan()
-    # logging.info(f"I2C devices found: {[hex(i) for i in i2c_scan]}")
     i2c = i2c_bus
 
-frame = [0] * 768
 mlx = adafruit_mlx90640.MLX90640(i2c)
-print("MLX addr detected on I2C", [hex(i) for i in mlx.serial_number])
+logger.info(f"MLX addr detected on I2C {[hex(i) for i in mlx.serial_number]}")
 mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
 
 tmp117 = [None] * MAX_NUMBER_OF_TMP117
@@ -98,26 +92,9 @@ for addr, dev in devices.items():
 if not kasa_relay is None:
     logger.info(f"Found relay: {kasa_relay}")
 
+fridge = Fridge(mlx, tmp117, kasa_relay)
+
 while True:
-    while True:
-        try:
-            logger.debug("Getting frame")
-            mlx.getFrame(frame)
-            break
-        except:
-            logger.exception("Could not read mlx frame")
-            time.sleep(1)
-
-    logger.debug("Converting frame to image")
-    frame_array = np.array(frame)
-    frame_array = np.reshape(frame_array, (-1, 32))
-    frame_array = np.fliplr(frame_array)
-
-    im = plt.imshow(frame_array)
-    plt.colorbar(im)
-    image = io.BytesIO()
-    plt.savefig(image, format="png")
-
     logger.debug("Waiting for publish")
     try:
         mqtt_mi.wait_for_publish()
@@ -125,35 +102,15 @@ while True:
         pass
     except:
         logger.exception("Error waiting for publish")
+
     logger.debug("Frame publish")
-    mqtt_mi = client.publish("inside/thermal1", bytearray(image.getvalue()))
-    plt.close()
+    mqtt_mi = client.publish("inside/thermal1", fridge.ir_image)
 
-    for i in range(MAX_NUMBER_OF_TMP117):
-        if not tmp117[i]:
-            break
+    for i, temp in enumerate(fridge.discrete_temperature_readings):
+        client.publish(f"inside/tmp117/{i}", temp)
 
-        try:
-            temp = tmp117[i].temperature
-        except:
-            logger.exception(f"Error reading TMP117 ({i})")
-
-        client.publish(f"inside/tmp117/{i}", round(temp, 2))
-
-        logger.debug(f"Temperature{i}: {temp}°C")
-
-    logger.debug("Kasa update")
-    asyncio.run(kasa_relay.update())
-    power = round(kasa_relay.emeter_realtime["power"], 2)
-    logger.debug(f"Power: {power} W")
-    # Power peaks at ~800W on startup
-    power = min(power, 80.00)
     logger.debug("Kasa publish")
-    client.publish(f"outside/relay/power", power)
-
-    kwh = kasa_relay.emeter_today
-    logger.debug(f"Energy (daily): {kwh} kWh")
-    client.publish(f"outside/relay/energy/daily", kwh)
+    client.publish(f"outside/relay/power", fridge.power_usage)
 
     logger.debug("Going to sleep")
     time.sleep(2)
