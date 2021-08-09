@@ -56,19 +56,34 @@ if "DEBUG" in os.environ:
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 
+i2c_buses = []
+i2c_bus_internal = None
+i2c_bus_external = None
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
     i2c_bus = busio.I2C(bus_id=address, frequency=400000)
-    i2c = i2c_bus
+    i2c_buses.append(i2c_bus)
 
-mlx = adafruit_mlx90640.MLX90640(i2c)
-logger.info(f"MLX addr detected on I2C {[hex(i) for i in mlx.serial_number]}")
-mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
+# Find which i2c bus has the camera
+for bus in i2c_buses:
+    try:
+        mlx = adafruit_mlx90640.MLX90640(bus)
+        logger.info(f"MLX addr detected on I2C {[hex(i) for i in mlx.serial_number]}")
+        mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
+        i2c_bus_internal = bus
+        i2c_buses.remove(bus)
+    except:
+        pass
+
+# The other bus is the external
+if i2c_buses:
+    logger.info("Found external i2c bus")
+    i2c_bus_external = i2c_buses[0]
 
 tmp117 = [None] * MAX_NUMBER_OF_TMP117
 for i in range(MAX_NUMBER_OF_TMP117):
     try:
-        tmp117[i] = adafruit_tmp117.TMP117(i2c, 0x48 + i)
+        tmp117[i] = adafruit_tmp117.TMP117(i2c_bus_internal, 0x48 + i)
     except Exception as e:
         logger.info(e)
 
