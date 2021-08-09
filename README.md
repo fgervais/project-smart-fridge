@@ -2,28 +2,20 @@
 
 ## The general idea
 
-We all like cold beer and one way to reach that target is to acquire a dedicated
-fridge for that beverage.
+The goal of this project is to make a custom control for a [DCR032A2BDD](https://www.danby.com/products/compact-refrigerators/dcr032a2bdd/) Danby mini fridge
+hoping to introduce a couple different modes to save power/reduce noise/reduce strain in
+idle periods and precisely cool when we need it.
 
-However how cold can it get?
+I'd also like to get that "sub-zero" tap experience at home from times to times.
 
-According to the FAQ of my [DCR032A2BDD](https://www.danby.com/products/compact-refrigerators/dcr032a2bdd/)
-unit, it can got down to 0°C.
+This idea came from this quote from the manufacturer's FAQ:
 
-![Dashboard](assets/img/danby-faq.png)
-
-I actually have good memories of the "sub-zero" tap we had at school and I think
-even still beer could accept -1°C, even maybe -2°C.
-
-But wait... What did they say?
-
+> The temperature range of Danby’s refrigerators are between 32F-39.2F/0C – 4C.
+> ...
 > Our refrigerators are capable of maintaining a wider range than the specified temperature
+> ...
 
-I guess they mean if you make your own custom control.
-
-Lets give this a try.
-
-## Step 1 - Install sensors
+## Step 1 - Install hardware
 
 ### Inside
 
