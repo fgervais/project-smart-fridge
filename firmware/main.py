@@ -58,7 +58,7 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
-    i2c_bus = busio.I2C(bus_id=address, frequency=800000)
+    i2c_bus = busio.I2C(bus_id=address, frequency=400000)
     i2c = i2c_bus
 
 mlx = adafruit_mlx90640.MLX90640(i2c)
