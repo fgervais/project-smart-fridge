@@ -1,6 +1,6 @@
 [[package]]
 name = "Adafruit-Blinka"
-version = "6.13.1.dev12+g9447b81"
+version = "6.13.1.dev13+g34cca50"
 description = "CircuitPython APIs for non-CircuitPython versions of Python such as CPython on Linux and MicroPython."
 category = "main"
 optional = false
@@ -15,8 +15,8 @@ pyftdi = ">=0.40.0"
 [package.source]
 type = "git"
 url = "https://github.com/fgervais/Adafruit_Blinka.git"
-reference = "multiple-mcp2221"
-resolved_reference = "9447b8134b55d8f04e5bfdd9997c20d3dcbd60ec"
+reference = "smart-fridge"
+resolved_reference = "34cca5082dc68289b86d8d47e0464d5d520fea33"
 
 [[package]]
 name = "adafruit-circuitpython-busdevice"
@@ -316,7 +316,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "9e37747da02b5c4723ad4c58fc52418111e999e372a2ba9a834c63c2e7688fac"
+content-hash = "b01051691431153e1d8a3fece3f89142ba2d49edccd2aee48e8b2cd0f8e6a8f5"
 
 [metadata.files]
 Adafruit-Blinka = []

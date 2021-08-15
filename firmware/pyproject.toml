@@ -13,7 +13,7 @@ matplotlib = "^3.4.2"
 paho-mqtt = "^1.5.1"
 adafruit-circuitpython-tmp117 = "^1.0.4"
 python-kasa = "^0.4.0-dev.3"
-adafruit-blinka = {git = "https://github.com/fgervais/Adafruit_Blinka.git", rev = "multiple-mcp2221"}
+adafruit-blinka = {git = "https://github.com/fgervais/Adafruit_Blinka.git", rev = "smart-fridge"}
 
 [tool.poetry.dev-dependencies]
 
