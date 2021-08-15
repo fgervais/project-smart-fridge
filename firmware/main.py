@@ -61,6 +61,7 @@ i2c_bus_internal = None
 i2c_bus_external = None
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
+    logger.debug(f"New I2C bus: {address}")
     i2c_bus = busio.I2C(bus_id=address, frequency=400000)
     i2c_buses.append(i2c_bus)
 
@@ -73,12 +74,28 @@ for bus in i2c_buses:
         i2c_bus_internal = bus
         i2c_buses.remove(bus)
     except:
+        logger.debug("This isn't the internal bus")
         pass
 
-# The other bus is the external
-if i2c_buses:
-    logger.info("Found external i2c bus")
-    i2c_bus_external = i2c_buses[0]
+# Find the compressor bus
+for bus in i2c_buses:
+    try:
+        compressor_tmp117 = adafruit_tmp117.TMP117(bus, 0x48)
+        i2c_bus_compressor = bus
+        i2c_buses.remove(bus)
+    except:
+        logger.debug("This isn't the comressor bus")
+        pass
+
+# Find the side bus
+for bus in i2c_buses:
+    try:
+        side_tmp117 = adafruit_tmp117.TMP117(bus, 0x49)
+        i2c_bus_side = bus
+        i2c_buses.remove(bus)
+    except:
+        logger.debug("This isn't the side bus")
+        pass
 
 tmp117 = [None] * MAX_NUMBER_OF_TMP117
 for i in range(MAX_NUMBER_OF_TMP117):
@@ -126,6 +143,20 @@ while True:
 
     logger.debug("Kasa publish")
     client.publish(f"outside/relay/power", fridge.power_usage)
+
+    try:
+        temp = compressor_tmp117.temperature
+        logger.debug(f"Temperature (compressor): {temp}°C")
+        client.publish(f"outside/compressor/temperature", round(temp, 2))
+    except:
+        logger.exception(f"Error reading compressor TMP117 ({i})")
+
+    try:
+        temp = side_tmp117.temperature
+        logger.debug(f"Temperature (side): {temp}°C")
+        client.publish(f"outside/side/temperature", round(temp, 2))
+    except:
+        logger.exception(f"Error reading side TMP117 ({i})")
 
     logger.debug("Going to sleep")
     time.sleep(2)
