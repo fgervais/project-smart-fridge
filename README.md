@@ -26,9 +26,11 @@ like so:
 
 ### Outside
 
-I installed one more `TMP117` a temperature sensors on the compressor.
+On the outside there is 1 `TMP117` on the compressor and 1 on the side condenser.
 
-I also added a tp-link `HS110` to get power consumption.
+There is also a tp-link `HS110` to get power consumption.
+
+![Inside Sensors](assets/img/outside-sensors.jpg)
 
 ## Step 2 - Get the data out
 
