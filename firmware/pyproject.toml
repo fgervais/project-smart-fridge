@@ -14,6 +14,7 @@ paho-mqtt = "^1.5.1"
 adafruit-circuitpython-tmp117 = "^1.0.4"
 python-kasa = "^0.4.0-dev.3"
 adafruit-blinka = {git = "https://github.com/fgervais/Adafruit_Blinka.git", rev = "smart-fridge"}
+adafruit-circuitpython-onewire = "^1.2.6"
 
 [tool.poetry.dev-dependencies]
 

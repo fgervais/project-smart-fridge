@@ -43,6 +43,18 @@ adafruit-circuitpython-busdevice = "*"
 adafruit-circuitpython-register = "*"
 
 [[package]]
+name = "adafruit-circuitpython-onewire"
+version = "1.2.6"
+description = "CircuitPython OneWire helper library for 1-wire bus devices."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Adafruit-Blinka = "*"
+adafruit-circuitpython-busdevice = "*"
+
+[[package]]
 name = "adafruit-circuitpython-register"
 version = "1.9.5"
 description = "CircuitPython data descriptor classes to represent hardware registers on I2C and SPI devices."
@@ -316,7 +328,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "b01051691431153e1d8a3fece3f89142ba2d49edccd2aee48e8b2cd0f8e6a8f5"
+content-hash = "ec4c86afeff3ed36ad4532016000838f5be7003aefc1fbf803baa1f68d0de359"
 
 [metadata.files]
 Adafruit-Blinka = []
@@ -325,6 +337,9 @@ adafruit-circuitpython-busdevice = [
 ]
 adafruit-circuitpython-mlx90640 = [
     {file = "adafruit-circuitpython-mlx90640-1.2.3.tar.gz", hash = "sha256:388ee0d7577556fa1578cfdad79a5d43392f6649566c1117199b56b4031864cb"},
+]
+adafruit-circuitpython-onewire = [
+    {file = "adafruit-circuitpython-onewire-1.2.6.tar.gz", hash = "sha256:2ffa9a5aa3c40a931fa5a1999b9f32943d8e8154600bdcc02af637b9002f9ac7"},
 ]
 adafruit-circuitpython-register = [
     {file = "adafruit-circuitpython-register-1.9.5.tar.gz", hash = "sha256:bd292198fb61d0e65c5a08a5181144c77a6e400864d63a5360ab3d38072fa7c4"},
