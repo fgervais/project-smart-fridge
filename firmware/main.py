@@ -12,12 +12,24 @@ import sys
 import time
 import traceback
 
+from ds2482.ds2482 import DS2482
+from ds2482.onewire import OneWireBus
+
 from pprint import pprint
 
 import i2c_helper
 import persistent_state
 
 from fridge import Fridge, Thermostat, S31Relay
+
+
+
+i2c = busio.I2C(frequency=400000)
+ds2482 = DS2482(i2c)
+ow = OneWireBus(ds2482)
+exit()
+
+
 
 
 WATCHDOG_TIMEOUT_SEC = 30
