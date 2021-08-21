@@ -24,6 +24,9 @@ KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
 MCP2221_VID = 0x04D8
 MCP2221_PID = 0x00DD
 
+COMPRESSOR_TMP117_ADDR = 0x48
+EVAPORATOR_TMP117_ADDR = 0x49
+
 
 # Used by docker-compose down
 def sigterm_handler(signal, frame):
@@ -58,7 +61,6 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 
 i2c_buses = []
 i2c_bus_internal = None
-i2c_bus_external = None
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
     logger.debug(f"New I2C bus: {address}")
@@ -75,27 +77,22 @@ for bus in i2c_buses:
         i2c_buses.remove(bus)
     except:
         logger.debug("This isn't the internal bus")
-        pass
 
 # Find the compressor bus
 for bus in i2c_buses:
     try:
-        compressor_tmp117 = adafruit_tmp117.TMP117(bus, 0x48)
-        i2c_bus_compressor = bus
+        compressor_tmp117 = adafruit_tmp117.TMP117(bus, COMPRESSOR_TMP117_ADDR)
         i2c_buses.remove(bus)
     except:
         logger.debug("This isn't the comressor bus")
-        pass
 
 # Find the side bus
 for bus in i2c_buses:
     try:
-        side_tmp117 = adafruit_tmp117.TMP117(bus, 0x49)
-        i2c_bus_side = bus
+        side_tmp117 = adafruit_tmp117.TMP117(bus, EVAPORATOR_TMP117_ADDR)
         i2c_buses.remove(bus)
     except:
         logger.debug("This isn't the side bus")
-        pass
 
 tmp117 = [None] * MAX_NUMBER_OF_TMP117
 for i in range(MAX_NUMBER_OF_TMP117):
