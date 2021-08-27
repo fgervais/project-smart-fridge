@@ -15,7 +15,7 @@ import time
 
 from pprint import pprint
 
-from fridge import Fridge
+from fridge import Fridge, Thermostat
 
 
 MAX_NUMBER_OF_TMP117 = 4
@@ -36,6 +36,11 @@ def sigterm_handler(signal, frame):
 
 
 def teardown():
+    try:
+        fridge.thermostat.off()
+    except:
+        pass
+
     try:
         client.loop_stop()
     except:
@@ -121,7 +126,8 @@ for addr, dev in devices.items():
 if not kasa_relay is None:
     logger.info(f"Found relay: {kasa_relay}")
 
-fridge = Fridge(mlx, tmp117, kasa_relay)
+thermostat = Thermostat(kasa_relay, tmp117[1])
+fridge = Fridge(thermostat, mlx, tmp117, kasa_relay)
 
 while True:
     logger.debug("Waiting for publish")
@@ -154,6 +160,9 @@ while True:
         client.publish(f"outside/side/temperature", round(temp, 2))
     except:
         logger.exception(f"Error reading side TMP117 ({i})")
+
+    if fridge.thermostat:
+        fridge.thermostat.run()
 
     logger.debug("Going to sleep")
     time.sleep(2)

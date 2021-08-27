@@ -12,8 +12,36 @@ if "DEBUG" in os.environ:
     logger.setLevel(logging.DEBUG)
 
 
+class Thermostat:
+    def __init__(self, kasa_relay, sensor, min_t=-5, max_t=2):
+        self.kasa_relay = kasa_relay
+        self.sensor = sensor
+        self.min_t = min_t
+        self.max_t = max_t
+
+        if sensor.temperature > max_t:
+            self.on()
+        else:
+            self.off()
+
+    def on(self):
+        asyncio.run(self.kasa_relay.turn_on())
+        self.is_on = True
+
+    def off(self):
+        asyncio.run(self.kasa_relay.turn_off())
+        self.is_on = False
+
+    def run(self):
+        if self.is_on and self.sensor.temperature < self.min_t:
+            self.off()
+        elif not self.is_on and self.sensor.temperature > self.max_t:
+            self.on()
+
+
 class Fridge:
-    def __init__(self, ir_camera, discrete_temperature_sensors, kasa_relay):
+    def __init__(self, thermostat, ir_camera, discrete_temperature_sensors, kasa_relay):
+        self.thermostat = thermostat
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.kasa_relay = kasa_relay
@@ -56,6 +84,9 @@ class Fridge:
 
     @property
     def power_usage(self):
+        if not self.thermostat.is_on:
+            return 0
+
         logger.debug("Kasa update")
         asyncio.run(self.kasa_relay.update())
         power = self.kasa_relay.emeter_realtime["power"]
