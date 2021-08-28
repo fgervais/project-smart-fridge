@@ -126,8 +126,8 @@ for addr, dev in devices.items():
 if not kasa_relay is None:
     logger.info(f"Found relay: {kasa_relay}")
 
-thermostat = Thermostat(kasa_relay, tmp117[1])
-fridge = Fridge(thermostat, mlx, tmp117, kasa_relay)
+# thermostat = Thermostat(kasa_relay, tmp117[1])
+fridge = Fridge(mlx, tmp117, kasa_relay)
 
 while True:
     logger.debug("Waiting for publish")

@@ -40,11 +40,11 @@ class Thermostat:
 
 
 class Fridge:
-    def __init__(self, thermostat, ir_camera, discrete_temperature_sensors, kasa_relay):
-        self.thermostat = thermostat
+    def __init__(self, ir_camera, discrete_temperature_sensors, kasa_relay, thermostat=None):
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.kasa_relay = kasa_relay
+        self.thermostat = thermostat
 
     @property
     def ir_frame(self):
@@ -84,7 +84,7 @@ class Fridge:
 
     @property
     def power_usage(self):
-        if not self.thermostat.is_on:
+        if self.thermostat and not self.thermostat.is_on:
             return 0
 
         logger.debug("Kasa update")
