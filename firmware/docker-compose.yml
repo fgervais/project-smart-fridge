@@ -13,4 +13,5 @@ services:
       - /dev/bus/usb
     volumes:
       - /run/avahi-daemon/socket:/run/avahi-daemon/socket
+      - /etc/localtime:/etc/localtime:ro
     network_mode: "host"
