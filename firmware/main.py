@@ -12,6 +12,7 @@ import os
 import paho.mqtt.client as mqtt
 import signal
 import time
+import traceback
 
 from pprint import pprint
 
@@ -20,6 +21,7 @@ from fridge import Fridge, Thermostat
 
 MAX_NUMBER_OF_TMP117 = 4
 KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
+WATCHDOG_TIMEOUT_SEC = 30
 
 MCP2221_VID = 0x04D8
 MCP2221_PID = 0x00DD
@@ -33,6 +35,25 @@ def sigterm_handler(signal, frame):
     logger.info("Reacting to SIGTERM")
     teardown()
     exit(0)
+
+
+def hang(signal, frame):
+    logger.error("User requested hang")
+    logger.error("".join(traceback.format_stack(frame)))
+    while True:
+        time.sleep(1)
+
+
+def alarm_signal_handler(signal, frame):
+    logger.error("Watchdog interrupt!")
+    logger.error(traceback.format_stack(frame))
+    exit(1)
+    logger.error("".join(traceback.format_stack(frame)))
+
+
+def kick_watchdog():
+    logger.debug("Watchdog kick")
+    signal.alarm(WATCHDOG_TIMEOUT_SEC)
 
 
 def teardown():
@@ -63,6 +84,8 @@ if "DEBUG" in os.environ:
     logger.setLevel(logging.DEBUG)
 
 signal.signal(signal.SIGTERM, sigterm_handler)
+signal.signal(signal.SIGUSR2, hang)
+signal.signal(signal.SIGALRM, alarm_signal_handler)
 
 i2c_buses = []
 i2c_bus_internal = None
@@ -129,6 +152,9 @@ if not kasa_relay is None:
 # thermostat = Thermostat(kasa_relay, tmp117[1])
 fridge = Fridge(mlx, tmp117, kasa_relay)
 
+kick_watchdog()
+
+
 while True:
     logger.debug("Waiting for publish")
     try:
@@ -163,6 +189,8 @@ while True:
 
     if fridge.thermostat:
         fridge.thermostat.run()
+
+    kick_watchdog()
 
     logger.debug("Going to sleep")
     time.sleep(2)
