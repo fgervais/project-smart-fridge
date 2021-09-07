@@ -40,7 +40,9 @@ class Thermostat:
 
 
 class Fridge:
-    def __init__(self, ir_camera, discrete_temperature_sensors, kasa_relay, thermostat=None):
+    def __init__(
+        self, ir_camera, discrete_temperature_sensors, kasa_relay, thermostat=None
+    ):
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.kasa_relay = kasa_relay
