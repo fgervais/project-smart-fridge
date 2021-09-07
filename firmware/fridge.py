@@ -50,15 +50,20 @@ class Fridge:
 
     @property
     def ir_frame(self):
+        MAX_RETRY = 5
+
         frame = [0] * 768
 
-        while True:
+        for retry in range(MAX_RETRY):
             try:
                 logger.debug("Getting frame")
                 self.ir_camera.getFrame(frame)
                 break
             except Exception:
                 logger.exception("Could not read mlx frame")
+                # We reset halfway so we try a bit before and after the reset
+                if retry == int(MAX_RETRY / 2):
+                    self._reset_mcp2221(self.ir_camera)
                 time.sleep(1)
 
         return frame
@@ -98,6 +103,12 @@ class Fridge:
         power = min(power, 80.00)
 
         return power
+
+    def _reset_mcp2221(self, device):
+        logger.info("Resetting MCP2221A")
+        mcp2221_handle = device.i2c_device.i2c._i2c._mcp2221
+        mcp2221_handle._hid.close()
+        mcp2221_handle._hid.open_path(mcp2221_handle._bus_id)
 
     def ir_frame_to_image(self, frame):
         logger.debug("Converting frame to image")
