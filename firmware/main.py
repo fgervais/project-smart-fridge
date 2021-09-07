@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import os
 import paho.mqtt.client as mqtt
 import signal
+import sys
 import time
 import traceback
 
@@ -34,7 +35,7 @@ EVAPORATOR_TMP117_ADDR = 0x49
 def sigterm_handler(signal, frame):
     logger.info("Reacting to SIGTERM")
     teardown()
-    exit(0)
+    sys.exit(0)
 
 
 def hang(signal, frame):
@@ -44,11 +45,12 @@ def hang(signal, frame):
         time.sleep(1)
 
 
+# This will not interrupt pure C code:
+# https://docs.python.org/3/library/signal.html#execution-of-python-signal-handlers
 def alarm_signal_handler(signal, frame):
     logger.error("Watchdog interrupt!")
-    logger.error(traceback.format_stack(frame))
-    exit(1)
     logger.error("".join(traceback.format_stack(frame)))
+    sys.exit(1)
 
 
 def kick_watchdog():
@@ -59,17 +61,17 @@ def kick_watchdog():
 def teardown():
     try:
         fridge.thermostat.off()
-    except:
+    except Exception:
         pass
 
     try:
         client.loop_stop()
-    except:
+    except Exception:
         logger.exception("Could not stop MQTT client loop")
 
     try:
         client.disconnect()
-    except:
+    except Exception:
         logger.exception("Could not disconnect MQTT client")
 
 
@@ -103,7 +105,7 @@ for bus in i2c_buses:
         mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
         i2c_bus_internal = bus
         i2c_buses.remove(bus)
-    except:
+    except Exception:
         logger.debug("This isn't the internal bus")
 
 # Find the compressor bus
@@ -111,7 +113,7 @@ for bus in i2c_buses:
     try:
         compressor_tmp117 = adafruit_tmp117.TMP117(bus, COMPRESSOR_TMP117_ADDR)
         i2c_buses.remove(bus)
-    except:
+    except Exception:
         logger.debug("This isn't the comressor bus")
 
 # Find the side bus
@@ -119,7 +121,7 @@ for bus in i2c_buses:
     try:
         side_tmp117 = adafruit_tmp117.TMP117(bus, EVAPORATOR_TMP117_ADDR)
         i2c_buses.remove(bus)
-    except:
+    except Exception:
         logger.debug("This isn't the side bus")
 
 tmp117 = [None] * MAX_NUMBER_OF_TMP117
@@ -161,7 +163,7 @@ while True:
         mqtt_mi.wait_for_publish()
     except NameError as e:
         pass
-    except:
+    except Exception:
         logger.exception("Error waiting for publish")
 
     logger.debug("Frame publish")
@@ -177,14 +179,14 @@ while True:
         temp = compressor_tmp117.temperature
         logger.debug(f"Temperature (compressor): {temp}°C")
         client.publish(f"outside/compressor/temperature", round(temp, 2))
-    except:
+    except Exception:
         logger.exception(f"Error reading compressor TMP117 ({i})")
 
     try:
         temp = side_tmp117.temperature
         logger.debug(f"Temperature (side): {temp}°C")
         client.publish(f"outside/side/temperature", round(temp, 2))
-    except:
+    except Exception:
         logger.exception(f"Error reading side TMP117 ({i})")
 
     if fridge.thermostat:

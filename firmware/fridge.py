@@ -55,7 +55,7 @@ class Fridge:
                 logger.debug("Getting frame")
                 self.ir_camera.getFrame(frame)
                 break
-            except:
+            except Exception:
                 logger.exception("Could not read mlx frame")
                 time.sleep(1)
 
@@ -77,7 +77,7 @@ class Fridge:
                 temp = sensor.temperature
                 logger.debug(f"Temperature{i}: {temp}°C")
                 readings.append(round(temp, 2))
-            except:
+            except Exception:
                 logger.exception(f"Error reading TMP117 ({i})")
 
         return readings
