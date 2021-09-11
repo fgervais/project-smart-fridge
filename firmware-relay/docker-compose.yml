@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  esphome:
+    image: esphome/esphome:2021.8.2
+    volumes:
+      - ./:/config:rw
+      # Use local time for logging timestamps
+      - /etc/localtime:/etc/localtime:ro
+    devices:
+      - /dev/ttyUSB1:/dev/ttyUSB0
+    # network_mode: host
+    # restart: always
