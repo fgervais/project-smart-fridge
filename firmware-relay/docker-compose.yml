@@ -9,5 +9,5 @@ services:
       - /etc/localtime:/etc/localtime:ro
     devices:
       - /dev/ttyUSB1:/dev/ttyUSB0
-    # network_mode: host
+    network_mode: host
     # restart: always
