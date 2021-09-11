@@ -41,30 +41,27 @@ class Thermostat:
 
 class Fridge:
     def __init__(
-        self, ir_camera, discrete_temperature_sensors, kasa_relay, thermostat=None
+        self,
+        ir_camera,
+        discrete_temperature_sensors,
+        compressor_sensor,
+        condenser_sensor,
+        kasa_relay,
+        thermostat=None,
     ):
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
+        self.compressor_sensor = compressor_sensor
+        self.condenser_sensor = condenser_sensor
         self.kasa_relay = kasa_relay
         self.thermostat = thermostat
 
     @property
     def ir_frame(self):
-        MAX_RETRY = 5
-
         frame = [0] * 768
 
-        for retry in range(MAX_RETRY):
-            try:
-                logger.debug("Getting frame")
-                self.ir_camera.getFrame(frame)
-                break
-            except Exception:
-                logger.exception("Could not read mlx frame")
-                # We reset halfway so we try a bit before and after the reset
-                if retry == int(MAX_RETRY / 2):
-                    self._reset_mcp2221(self.ir_camera)
-                time.sleep(1)
+        logger.debug("Getting frame")
+        self._retry(lambda: self.ir_camera.getFrame(frame), "Could not read mlx frame")
 
         return frame
 
@@ -80,14 +77,32 @@ class Fridge:
             if not sensor:
                 break
 
-            try:
-                temp = sensor.temperature
-                logger.debug(f"Temperature{i}: {temp}°C")
-                readings.append(round(temp, 2))
-            except Exception:
-                logger.exception(f"Error reading TMP117 ({i})")
+            temp = self._retry(
+                lambda: sensor.temperature, f"Error reading TMP117 ({i})"
+            )
+            logger.debug(f"Temperature{i}: {temp}°C")
+            readings.append(round(temp, 2))
 
         return readings
+
+    @property
+    def compressor_temperature(self):
+        temp = self._retry(
+            lambda: self.compressor_sensor.temperature,
+            f"Error reading compressor TMP117",
+        )
+        logger.debug(f"Temperature (compressor): {temp}°C")
+
+        return round(temp, 2)
+
+    @property
+    def condenser_temperature(self):
+        temp = self._retry(
+            lambda: self.condenser_sensor.temperature, f"Error reading condenser TMP117"
+        )
+        logger.debug(f"Temperature (condenser): {temp}°C")
+
+        return round(temp, 2)
 
     @property
     def power_usage(self):
@@ -109,6 +124,21 @@ class Fridge:
         mcp2221_handle = device.i2c_device.i2c._i2c._mcp2221
         mcp2221_handle._hid.close()
         mcp2221_handle._hid.open_path(mcp2221_handle._bus_id)
+
+    def _retry(self, func, error_message="Could not execute function"):
+        MAX_RETRY = 3
+
+        for retry in range(MAX_RETRY):
+            try:
+                ret = func()
+                break
+            except Exception as e:
+                logger.exception(error_message)
+                if retry == (MAX_RETRY - 1):
+                    raise e
+                time.sleep(1)
+
+        return ret
 
     def ir_frame_to_image(self, frame):
         logger.debug("Converting frame to image")
