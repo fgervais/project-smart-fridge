@@ -7,7 +7,6 @@ services:
       - ./:/config:rw
       # Use local time for logging timestamps
       - /etc/localtime:/etc/localtime:ro
-    devices:
-      - /dev/ttyUSB1:/dev/ttyUSB0
+    # devices:
+    #   - /dev/ttyUSB1:/dev/ttyUSB0
     network_mode: host
-    # restart: always
