@@ -1,5 +1,3 @@
-import adafruit_mlx90640
-import adafruit_tmp117
 import asyncio
 import board
 import busio
@@ -17,10 +15,11 @@ import traceback
 
 from pprint import pprint
 
+import i2c_helper
+
 from fridge import Fridge, Thermostat
 
 
-MAX_NUMBER_OF_TMP117 = 4
 KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
 WATCHDOG_TIMEOUT_SEC = 30
 
@@ -90,49 +89,15 @@ signal.signal(signal.SIGUSR2, hang)
 signal.signal(signal.SIGALRM, alarm_signal_handler)
 
 i2c_buses = []
-i2c_bus_internal = None
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
     logger.debug(f"New I2C bus: {address}")
     i2c_bus = busio.I2C(bus_id=address, frequency=400000)
     i2c_buses.append(i2c_bus)
 
-# Find which i2c bus has the camera
-for bus in i2c_buses:
-    try:
-        mlx = adafruit_mlx90640.MLX90640(bus)
-        logger.info(f"MLX addr detected on I2C {[hex(i) for i in mlx.serial_number]}")
-        mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ
-        i2c_bus_internal = bus
-        i2c_buses.remove(bus)
-    except Exception:
-        logger.debug("This isn't the internal bus")
-
-# Find the compressor bus
-for bus in i2c_buses:
-    try:
-        compressor_tmp117 = adafruit_tmp117.TMP117(bus, COMPRESSOR_TMP117_ADDR)
-        i2c_buses.remove(bus)
-    except Exception:
-        logger.debug("This isn't the comressor bus")
-
-# Find the side bus
-for bus in i2c_buses:
-    try:
-        condenser_tmp117 = adafruit_tmp117.TMP117(bus, CONDENSER_TMP117_ADDR)
-        i2c_buses.remove(bus)
-    except Exception:
-        logger.debug("This isn't the side bus")
-
-inside_tmp117 = [None] * MAX_NUMBER_OF_TMP117
-for i in range(MAX_NUMBER_OF_TMP117):
-    try:
-        inside_tmp117[i] = adafruit_tmp117.TMP117(i2c_bus_internal, 0x48 + i)
-    except Exception as e:
-        logger.info(e)
-
-if not any(inside_tmp117):
-    logger.info("No sensor detected")
+mlx, compressor_tmp117, condenser_tmp117, inside_tmp117 = i2c_helper.enumerate(
+    i2c_buses, COMPRESSOR_TMP117_ADDR, CONDENSER_TMP117_ADDR
+)
 
 client = mqtt.Client()
 client.connect("home.local")
