@@ -16,12 +16,15 @@ import traceback
 from pprint import pprint
 
 import i2c_helper
+import persistent_state
 
 from fridge import Fridge, Thermostat
 
 
 KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
 WATCHDOG_TIMEOUT_SEC = 30
+
+MAX_APP_RESTART_COUNT = 5
 
 MCP2221_VID = 0x04D8
 MCP2221_PID = 0x00DD
@@ -88,6 +91,20 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGUSR2, hang)
 signal.signal(signal.SIGALRM, alarm_signal_handler)
 
+pstate = persistent_state.load()
+pstate["restart_count"] += 1
+persistent_state.inc_restart_count()
+logger.info(f"Restart count = {pstate['restart_count']}")
+
+if pstate["restart_count"] > 1:
+    logger.info("We are recovering from a failure")
+
+if pstate["restart_count"] == MAX_APP_RESTART_COUNT:
+    persistent_state.reset_restart_count()
+    logger.error("Max restart reached, stopping application")
+    while True:
+        time.sleep(1)
+
 i2c_buses = []
 addresses = [mcp["path"] for mcp in hid.enumerate(MCP2221_VID, MCP2221_PID)]
 for address in addresses:
@@ -146,7 +163,14 @@ while True:
     if fridge.thermostat:
         fridge.thermostat.run()
 
+    if pstate["restart_count"] > 0:
+        logger.debug("Resetting restart count to 0")
+        pstate["restart_count"] = 0
+        persistent_state.reset_restart_count()
+
     kick_watchdog()
 
     logger.debug("Going to sleep")
     time.sleep(2)
+
+    logger.debug("-" * 40)
