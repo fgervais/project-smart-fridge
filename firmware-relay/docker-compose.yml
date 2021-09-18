@@ -10,3 +10,7 @@ services:
     # devices:
     #   - /dev/ttyUSB1:/dev/ttyUSB0
     network_mode: host
+    # esphome won't resolve mDNS names for mqtt logs?
+    # https://github.com/esphome/esphome/issues/96
+    extra_hosts:
+      - home.local:192.168.2.159
