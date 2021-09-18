@@ -1,6 +1,9 @@
 # Basic Config
+substitutions:
+  devicename: fridge-relay
+
 esphome:
-  name: fridge-relay
+  name: ${devicename}
   platform: ESP8266
   board: esp01_1m
 
@@ -10,11 +13,18 @@ wifi:
 
 logger:
   baud_rate: 0 # (UART logging interferes with cse7766)
-# api:
+
 ota:
 
-# Device Specific Config
+mqtt:
+  broker: home.local
 
+  on_message:
+    topic: ${devicename}/keepalive
+    then:
+      - switch.toggle: relay
+
+# Device Specific Config
 uart:
   rx_pin: RX
   baud_rate: 4800
