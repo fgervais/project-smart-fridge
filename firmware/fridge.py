@@ -12,9 +12,23 @@ if "DEBUG" in os.environ:
     logger.setLevel(logging.DEBUG)
 
 
+class S31Relay:
+    def __init__(self, mqtt_client):
+        self.mqtt_client = mqtt_client
+
+    def turn_on(self):
+        self.mqtt_client.publish("fridge-relay/switch/sonoff_s31_relay/command", "ON")
+
+    def turn_off(self):
+        self.mqtt_client.publish("fridge-relay/switch/sonoff_s31_relay/command", "OFF")
+
+    def keepalive(self):
+        self.mqtt_client.publish("fridge-relay/keepalive", True)
+
+
 class Thermostat:
-    def __init__(self, kasa_relay, sensor, min_t=-5, max_t=2):
-        self.kasa_relay = kasa_relay
+    def __init__(self, relay, sensor, min_t=-5, max_t=2):
+        self.relay = relay
         self.sensor = sensor
         self.min_t = min_t
         self.max_t = max_t
@@ -25,11 +39,11 @@ class Thermostat:
             self.off()
 
     def on(self):
-        asyncio.run(self.kasa_relay.turn_on())
+        asyncio.run(self.relay.turn_on())
         self.is_on = True
 
     def off(self):
-        asyncio.run(self.kasa_relay.turn_off())
+        asyncio.run(self.relay.turn_off())
         self.is_on = False
 
     def run(self):
@@ -46,14 +60,12 @@ class Fridge:
         discrete_temperature_sensors,
         compressor_sensor,
         condenser_sensor,
-        kasa_relay,
         thermostat=None,
     ):
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.compressor_sensor = compressor_sensor
         self.condenser_sensor = condenser_sensor
-        self.kasa_relay = kasa_relay
         self.thermostat = thermostat
 
     @property
@@ -106,18 +118,7 @@ class Fridge:
 
     @property
     def power_usage(self):
-        if self.thermostat and not self.thermostat.is_on:
-            return 0
-
-        logger.debug("Kasa update")
-        asyncio.run(self.kasa_relay.update())
-        power = self.kasa_relay.emeter_realtime["power"]
-        logger.debug(f"Power: {power} W")
-        power = round(power, 2)
-        # Power peaks at ~800W on startup, limit to 80W
-        power = min(power, 80.00)
-
-        return power
+        raise NotImplementedError()
 
     def _reset_mcp2221(self, device):
         logger.info("Resetting MCP2221A")

@@ -3,7 +3,6 @@ import board
 import busio
 import forensic
 import hid
-import kasa
 import logging
 import matplotlib.pyplot as plt
 import os
@@ -18,10 +17,9 @@ from pprint import pprint
 import i2c_helper
 import persistent_state
 
-from fridge import Fridge, Thermostat
+from fridge import Fridge, Thermostat, S31Relay
 
 
-KASA_RELAY_DEVICE_ID = "50:C7:BF:6B:D4:E9"
 WATCHDOG_TIMEOUT_SEC = 30
 
 MAX_APP_RESTART_COUNT = 5
@@ -124,17 +122,9 @@ plt.style.use("dark_background")
 
 forensic.register_debug_hook()
 
-kasa_relay = None
-devices = asyncio.run(kasa.Discover.discover())
-for addr, dev in devices.items():
-    if dev.device_id == KASA_RELAY_DEVICE_ID:
-        kasa_relay = dev
-
-if not kasa_relay is None:
-    logger.info(f"Found relay: {kasa_relay}")
-
-# thermostat = Thermostat(kasa_relay, inside_tmp117[1])
-fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117, kasa_relay)
+relay = S31Relay(client)
+# thermostat = Thermostat(relay, inside_tmp117[1])
+fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117)
 
 kick_watchdog()
 
@@ -154,13 +144,10 @@ while True:
     for i, temp in enumerate(fridge.discrete_temperature_readings):
         client.publish(f"inside/tmp117/{i}", temp)
 
-    logger.debug("Kasa publish")
-    client.publish(f"outside/relay/power", fridge.power_usage)
-
     client.publish(f"outside/compressor/temperature", fridge.compressor_temperature)
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
-    client.publish("fridge-relay/keepalive", True)
+    relay.keepalive()
 
     if fridge.thermostat:
         fridge.thermostat.run()
