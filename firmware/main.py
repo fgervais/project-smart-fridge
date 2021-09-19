@@ -160,6 +160,8 @@ while True:
     client.publish(f"outside/compressor/temperature", fridge.compressor_temperature)
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
+    client.publish("fridge-relay/keepalive", True)
+
     if fridge.thermostat:
         fridge.thermostat.run()
 
