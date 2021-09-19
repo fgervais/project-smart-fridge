@@ -34,10 +34,8 @@ script:
     then:
       - script.stop: failsafe
       - script.execute: failsafe
-      - logger.log: Failsafe reset
   - id: failsafe
     then:
-      - logger.log: Failsafe countdown started
       - delay: 10min
       - logger.log: Failsafe started
       - while:
