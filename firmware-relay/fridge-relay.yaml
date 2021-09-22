@@ -82,6 +82,7 @@ sensor:
     name: "Sonoff S31 WiFi Signal"
     update_interval: 60s
   - platform: cse7766
+    update_interval: 5s
     current:
       name: "Sonoff S31 Current"
       accuracy_decimals: 1
