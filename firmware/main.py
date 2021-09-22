@@ -115,7 +115,16 @@ mlx, compressor_tmp117, condenser_tmp117, inside_tmp117 = i2c_helper.enumerate(
 )
 
 client = mqtt.Client()
-client.connect("home.local")
+last_log_time = 0
+while True:
+    try:
+        client.connect("home.local")
+        break
+    except Exception:
+        if (time.monotonic() - last_log_time) > (10 * 60):
+            logger.exception("Could not connect to MQTT server, retrying")
+            last_log_time = time.monotonic()
+        time.sleep(2)
 client.loop_start()
 
 plt.style.use("dark_background")
@@ -127,7 +136,7 @@ relay = S31Relay(client)
 fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117)
 
 kick_watchdog()
-
+logger.info("We are online!")
 
 while True:
     logger.debug("Waiting for publish")
