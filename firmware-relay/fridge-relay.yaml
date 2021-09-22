@@ -92,6 +92,7 @@ sensor:
     power:
       name: "Sonoff S31 Power"
       accuracy_decimals: 1
+      force_update: true
 switch:
   - platform: gpio
     name: "Sonoff S31 Relay"
