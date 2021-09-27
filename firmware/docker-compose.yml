@@ -16,7 +16,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - persistent-state:/persistent_state
     # network_mode: "host"
-    restart: always
+    # restart: always
 
 volumes:
   persistent-state:
