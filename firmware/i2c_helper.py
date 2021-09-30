@@ -1,7 +1,11 @@
+import adafruit_ds18x20
 import adafruit_mlx90640
 import adafruit_tmp117
 import logging
 import os
+
+from ds2482.ds2482 import DS2482
+from ds2482.onewire import OneWireBus
 
 
 MAX_NUMBER_OF_TMP117 = 4
@@ -54,4 +58,20 @@ def enumerate(buses, compressor_tmp117_addr, condenser_tmp117_addr):
     if not any(inside_tmp117):
         logger.info("No sensor detected")
 
-    return mlx, compressor_tmp117, condenser_tmp117, inside_tmp117
+    try:
+        ds2482 = DS2482(i2c_bus_internal, active_pullup=True)
+        ow_bus = OneWireBus(ds2482)
+
+        devices = ow_bus.scan()
+        for device in devices:
+            logger.info(
+                "ROM = {} \tFamily = 0x{:02x}".format(
+                    [hex(i) for i in device.rom], device.family_code
+                )
+            )
+
+        ds18b20 = adafruit_ds18x20.DS18X20(ow_bus, devices[0])
+    except Exception:
+        ds18b20 = None
+
+    return mlx, compressor_tmp117, condenser_tmp117, inside_tmp117, ds18b20

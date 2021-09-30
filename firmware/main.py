@@ -1,4 +1,3 @@
-import adafruit_ds18x20
 import asyncio
 import board
 import busio
@@ -13,32 +12,12 @@ import sys
 import time
 import traceback
 
-from ds2482.ds2482 import DS2482
-from ds2482.onewire import OneWireBus
-
 from pprint import pprint
 
 import i2c_helper
 import persistent_state
 
 from fridge import Fridge, Thermostat, S31Relay
-
-
-
-i2c = busio.I2C(frequency=400000)
-ds2482 = DS2482(i2c, active_pullup=True)
-ow_bus = OneWireBus(ds2482)
-
-devices = ow_bus.scan()
-for device in devices:
-    print("ROM = {} \tFamily = 0x{:02x}".format([hex(i) for i in device.rom], device.family_code))
-
-ds18b20 = adafruit_ds18x20.DS18X20(ow_bus, devices[0])
-
-print('Temperature: {0:0.3f} °C'.format(ds18b20.temperature))
-exit()
-
-
 
 
 WATCHDOG_TIMEOUT_SEC = 30
@@ -131,7 +110,7 @@ for address in addresses:
     i2c_bus = busio.I2C(bus_id=address, frequency=400000)
     i2c_buses.append(i2c_bus)
 
-mlx, compressor_tmp117, condenser_tmp117, inside_tmp117 = i2c_helper.enumerate(
+mlx, compressor_tmp117, condenser_tmp117, inside_tmp117, ds18b20 = i2c_helper.enumerate(
     i2c_buses, COMPRESSOR_TMP117_ADDR, CONDENSER_TMP117_ADDR
 )
 
