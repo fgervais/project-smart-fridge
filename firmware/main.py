@@ -156,7 +156,7 @@ while True:
     client.publish(f"outside/compressor/temperature", fridge.compressor_temperature)
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
-    relay.keepalive()
+    # relay.keepalive()
 
     if fridge.thermostat:
         fridge.thermostat.run()
