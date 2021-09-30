@@ -12,11 +12,11 @@ services:
     devices:
       - /dev/bus/usb
     volumes:
-      - /run/avahi-daemon/socket:/run/avahi-daemon/socket
+    #   - /run/avahi-daemon/socket:/run/avahi-daemon/socket
       - /etc/localtime:/etc/localtime:ro
       - persistent-state:/persistent_state
-    network_mode: "host"
-    restart: always
+    # network_mode: "host"
+    # restart: always
 
 volumes:
   persistent-state:

@@ -1,0 +1,3 @@
+[submodule "firmware/ds2482"]
+	path = firmware/ds2482
+	url = git@github.com:fgervais/ds2482.git
