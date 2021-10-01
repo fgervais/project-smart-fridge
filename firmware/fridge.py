@@ -39,17 +39,21 @@ class Thermostat:
             self.off()
 
     def on(self):
-        asyncio.run(self.relay.turn_on())
+        self.relay.turn_on()
         self.is_on = True
 
     def off(self):
-        asyncio.run(self.relay.turn_off())
+        self.relay.turn_off()
         self.is_on = False
 
     def run(self):
-        if self.is_on and self.sensor.temperature < self.min_t:
+        temperature = self.sensor.temperature
+        logger.debug(
+            f"Thermostat ({'ON' if self.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
+        )
+        if self.is_on and temperature < self.min_t:
             self.off()
-        elif not self.is_on and self.sensor.temperature > self.max_t:
+        elif not self.is_on and temperature > self.max_t:
             self.on()
 
 

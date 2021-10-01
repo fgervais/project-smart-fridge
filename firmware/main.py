@@ -132,8 +132,8 @@ plt.style.use("dark_background")
 forensic.register_debug_hook()
 
 relay = S31Relay(client)
-# thermostat = Thermostat(relay, inside_tmp117[1])
-fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117)
+thermostat = Thermostat(relay, inside_tmp117[1])
+fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117, thermostat)
 
 kick_watchdog()
 logger.info("We are online!")
@@ -156,7 +156,7 @@ while True:
     client.publish(f"outside/compressor/temperature", fridge.compressor_temperature)
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
-    # relay.keepalive()
+    relay.keepalive()
 
     if fridge.thermostat:
         fridge.thermostat.run()
