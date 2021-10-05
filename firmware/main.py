@@ -156,6 +156,9 @@ while True:
     client.publish(f"outside/compressor/temperature", fridge.compressor_temperature)
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
+    if ds18b20:
+        logger.debug("Liquid temperature: {0:0.2f} °C".format(ds18b20.temperature))
+
     relay.keepalive()
 
     if fridge.thermostat:
