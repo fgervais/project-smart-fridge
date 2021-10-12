@@ -18,6 +18,7 @@ import i2c_helper
 import persistent_state
 
 from fridge import Fridge, Thermostat, S31Relay
+from hass_mqtt_discovery.ha_mqtt_device import Device, Sensor
 
 
 WATCHDOG_TIMEOUT_SEC = 30
@@ -127,6 +128,17 @@ while True:
         time.sleep(2)
 client.loop_start()
 
+fridge_device = Device.from_config("device.yaml")
+if ds18b20:
+    ds18b20_sensor = Sensor(
+        client,
+        "waterproof",
+        parent_device=fridge_device,
+        unit_of_measurement="°C",
+        topic_parent_level="inside",
+    )
+    ds18b20_sensor.set_value_read_function(lambda: round(ds18b20.temperature, 2))
+
 plt.style.use("dark_background")
 
 forensic.register_debug_hook()
@@ -157,7 +169,7 @@ while True:
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
     if ds18b20:
-        logger.debug("Liquid temperature: {0:0.2f} °C".format(ds18b20.temperature))
+        ds18b20_sensor.send()
 
     relay.keepalive()
 
