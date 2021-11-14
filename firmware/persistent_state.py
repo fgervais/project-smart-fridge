@@ -1,4 +1,11 @@
 import json
+import logging
+import os
+
+
+logger = logging.getLogger(__name__)
+if "DEBUG" in os.environ:
+    logger.setLevel(logging.DEBUG)
 
 
 STATE_FILE_PATH = "/persistent_state/state"
@@ -19,6 +26,7 @@ def load():
     except FileNotFoundError:
         return STATE_DEFAULT
 
+    logger.debug(state)
     return state
 
 
@@ -36,3 +44,4 @@ def inc_restart_count():
 
 def reset_restart_count():
     set_restart_count(0)
+    logger.debug("Persistent state reset")

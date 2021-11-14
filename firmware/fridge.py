@@ -6,6 +6,8 @@ import numpy as np
 import os
 import time
 
+from datetime import timedelta
+
 
 logger = logging.getLogger(__name__)
 if "DEBUG" in os.environ:
@@ -27,50 +29,59 @@ class S31Relay:
 
 
 class Thermostat:
-    def __init__(self, relay, sensor, min_t=-5, max_t=2):
-        self.relay = relay
-        self.sensor = sensor
+    def __init__(self, min_t=-5, max_t=2):
+        self.fridge = None
         self.min_t = min_t
         self.max_t = max_t
 
-        if sensor.temperature > max_t:
-            self.on()
+    def set_fridge(self, fridge):
+        self.fridge = fridge
+
+        if self.fridge.evaporator_temperature > self.max_t:
+            self.fridge.on()
         else:
-            self.off()
-
-    def on(self):
-        self.relay.turn_on()
-        self.is_on = True
-
-    def off(self):
-        self.relay.turn_off()
-        self.is_on = False
+            self.fridge.off()
 
     def run(self):
-        temperature = self.sensor.temperature
+        if not self.fridge:
+            return
+
+        temperature = self.fridge.evaporator_temperature
         logger.debug(
-            f"Thermostat ({'ON' if self.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
+            f"Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
         )
-        if self.is_on and temperature < self.min_t:
-            self.off()
-        elif not self.is_on and temperature > self.max_t:
-            self.on()
+        if self.fridge.is_on and temperature < self.min_t:
+            self.fridge.off()
+        elif not self.fridge.is_on and temperature > self.max_t:
+            self.fridge.on()
 
 
 class Fridge:
+    COOLDOWN_TIME_SECONDS = 10 * 60
+    MAX_ON_SECONDS = 20 * 60
+
     def __init__(
         self,
         ir_camera,
         discrete_temperature_sensors,
         compressor_sensor,
         condenser_sensor,
+        relay=None,
         thermostat=None,
     ):
         self.ir_camera = ir_camera
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.compressor_sensor = compressor_sensor
         self.condenser_sensor = condenser_sensor
+        self.relay = relay
         self.thermostat = thermostat
+
+        self.is_on = False
+        self.last_on = None
+        self.last_off = None
+        self.in_cooldown = False
+        if self.thermostat:
+            self.thermostat.set_fridge(self)
 
     @property
     def ir_frame(self):
@@ -121,6 +132,16 @@ class Fridge:
         return round(temp, 2)
 
     @property
+    def evaporator_temperature(self):
+        temp = self._retry(
+            lambda: self.discrete_temperature_sensors[1].temperature,
+            f"Error reading condenser TMP117",
+        )
+        logger.debug(f"Temperature (evaporator): {temp}°C")
+
+        return round(temp, 2)
+
+    @property
     def power_usage(self):
         raise NotImplementedError()
 
@@ -158,3 +179,43 @@ class Fridge:
         plt.close()
 
         return bytearray(image.getvalue())
+
+    def on(self):
+        if not self.relay:
+            return
+
+        if self.in_cooldown:
+            return
+
+        self.relay.turn_on()
+        self.is_on = True
+        self.last_off = time.time()
+
+    def off(self):
+        if not self.relay:
+            return
+
+        self.relay.turn_off()
+        self.is_on = False
+        self.last_on = time.time()
+
+    def run(self):
+        if self.relay:
+            if self.is_on:
+                seconds_since_last_off = time.time() - self.last_off
+                logger.debug(
+                    f"Cooldown in {timedelta(seconds=Fridge.MAX_ON_SECONDS - int(seconds_since_last_off))} seconds"
+                )
+                if seconds_since_last_off > Fridge.MAX_ON_SECONDS:
+                    self.in_cooldown = True
+                    self.off()
+                    logger.info("Cooldown")
+            elif (
+                self.in_cooldown
+                and (time.time() - self.last_on) > Fridge.COOLDOWN_TIME_SECONDS
+            ):
+                self.in_cooldown = False
+                logger.info("!Cooldown")
+
+        if self.thermostat:
+            self.thermostat.run()
