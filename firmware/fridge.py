@@ -59,6 +59,7 @@ class Thermostat:
 class Fridge:
     COOLDOWN_TIME_SECONDS = 10 * 60
     MAX_ON_SECONDS = 20 * 60
+    MAX_COMPRESSOR_TEMPERATURE_C = 50
 
     def __init__(
         self,
@@ -203,10 +204,17 @@ class Fridge:
         if self.relay:
             if self.is_on:
                 seconds_since_last_off = time.time() - self.last_off
+                compressor_temperature = self.compressor_temperature
                 logger.debug(
                     f"Cooldown in {timedelta(seconds=Fridge.MAX_ON_SECONDS - int(seconds_since_last_off))} seconds"
                 )
-                if seconds_since_last_off > Fridge.MAX_ON_SECONDS:
+                logger.debug(
+                    f"Allowed compressor ΔT: {Fridge.MAX_COMPRESSOR_TEMPERATURE_C - compressor_temperature}°C"
+                )
+                if (
+                    seconds_since_last_off > Fridge.MAX_ON_SECONDS
+                    or compressor_temperature > Fridge.MAX_COMPRESSOR_TEMPERATURE_C
+                ):
                     self.in_cooldown = True
                     self.off()
                     logger.info("Cooldown")
