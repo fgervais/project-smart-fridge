@@ -186,6 +186,7 @@ class Fridge:
             return
 
         if self.in_cooldown:
+            logger.debug("We are in cooldown")
             return
 
         self.relay.turn_on()
@@ -206,10 +207,10 @@ class Fridge:
                 seconds_since_last_off = time.time() - self.last_off
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"Cooldown in {timedelta(seconds=Fridge.MAX_ON_SECONDS - int(seconds_since_last_off))} seconds"
+                    f"Cooldown in {timedelta(seconds=Fridge.MAX_ON_SECONDS - int(seconds_since_last_off))}"
                 )
                 logger.debug(
-                    f"Allowed compressor ΔT: {Fridge.MAX_COMPRESSOR_TEMPERATURE_C - compressor_temperature}°C"
+                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMPERATURE_C - compressor_temperature ,2)}°C"
                 )
                 if (
                     seconds_since_last_off > Fridge.MAX_ON_SECONDS
@@ -218,12 +219,12 @@ class Fridge:
                     self.in_cooldown = True
                     self.off()
                     logger.info("Cooldown")
-            elif (
-                self.in_cooldown
-                and (time.time() - self.last_on) > Fridge.COOLDOWN_TIME_SECONDS
-            ):
-                self.in_cooldown = False
-                logger.info("!Cooldown")
+            elif self.in_cooldown:
+                time_in_cooldown = int(time.time() - self.last_on)
+                logger.debug(f"In cooldown since {timedelta(seconds=time_in_cooldown)}")
+                if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
+                    self.in_cooldown = False
+                    logger.info("!Cooldown")
 
         if self.thermostat:
             self.thermostat.run()
