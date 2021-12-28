@@ -1,5 +1,7 @@
 # Smart Beer Fridge
 
+![Fridge](assets/img/fridge.jpg)
+
 ## The general idea
 
 The goal of this project is to make a custom control for a [DCR032A2BDD](https://www.danby.com/products/compact-refrigerators/dcr032a2bdd/) Danby mini fridge
@@ -15,39 +17,40 @@ This idea came from this quote from the manufacturer's FAQ:
 > Our refrigerators are capable of maintaining a wider range than the specified temperature
 > ...
 
-## Step 1 - Install hardware
+## Hardware Upgrade
 
-### Inside
+| Inside Sensors | Outside Sensors |
+|---|---|
+| ![Inside Sensors](assets/img/inside-sensors.jpg) | ![Inside Sensors](assets/img/outside-sensors.jpg) |
 
-I went with 1 `MLX90640` infrared thermal sensor and 4 `TMP117` roughly installed
-like so:
+## Interface
 
-![Inside Sensors](assets/img/inside-sensors.jpg)
+All sensors are sent to an Home Assistant instance through MQTT.
 
-### Outside
+![HA](assets/img/HA_Interface.JPG)
 
-On the outside there is 1 `TMP117` on the compressor and 1 on the side condenser.
+## Control
 
-There is also a tp-link `HS110` to get power consumption.
+The original fridge thermostat has been shorted and replaced by a Sonoff S31 relay.
 
-![Inside Sensors](assets/img/outside-sensors.jpg)
+The fridge control is done in two stages.
 
-## Step 2 - Get the data out
+- The base stage ensures that the fridge doesn't overrun the hardware capabilities
+e.g. compressor overheat.
+- On top of that, a software Thermostat is executed.
 
-I send all those sensor out to an Home Assistant instance through MQTT.
+## Failsafe
 
-![Dashboard](assets/img/ha-overview.png)
+The Sonoff S31 relay has been reflashed with ESPHome so that a failsafe can be
+implemented.
 
-## Step 3 - Get a sense of how things are working
+Basically the control software sends a keepalive ping to the relay through MQTT
+on each control loop. If the relay stops receiving keepalives for 10 minutes,
+something is wrong and so we failsafe to 10 minutes ON/50 minutes OFF.
 
-We don't want to push things too far so fist we need to learn how the fridge is
-working when it does the control itself.
+This ensures that the fridge won't freeze itself to death.
 
-I'm specifically interested how low/high the temperature gets at the evaporator,
-how often the compressor starts, for how long, and how does it's temperature
-behave.
-
-Things of that nature so when I take control I have a sense of what the limits are.
+![S31](assets/img/Sonoff_S31_Programming.png)
 
 ## IR view
 
