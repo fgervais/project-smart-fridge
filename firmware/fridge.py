@@ -58,8 +58,11 @@ class Thermostat:
 
 class Fridge:
     COOLDOWN_TIME_SECONDS = 10 * 60
-    MAX_ON_SECONDS = 20 * 60
-    MAX_COMPRESSOR_TEMPERATURE_C = 50
+    MIN_ON_SECONDS = 5 * 60
+    MIN_OFF_SECONDS = 5 * 60
+    MAX_COMPRESSOR_TEMP_C = 60
+    # Temperature over which the compressor won't be turned on.
+    MAX_COMPRESSOR_START_TEMP_C = MAX_COMPRESSOR_TEMP_C - 5
 
     def __init__(
         self,
@@ -189,13 +192,33 @@ class Fridge:
             logger.debug("We are in cooldown")
             return
 
+        if self.compressor_temperature >= Fridge.MAX_COMPRESSOR_START_TEMP_C:
+            logger.debug("Compressor is too hot")
+            return
+
+        if self.last_on is not None:
+            seconds_off = time.time() - self.last_on
+            if seconds_off < Fridge.MIN_OFF_SECONDS:
+                logger.debug(
+                    f"Compressor only OFF for {timedelta(seconds=int(seconds_since_last_off))}"
+                )
+                return
+
         self.relay.turn_on()
         self.is_on = True
         self.last_off = time.time()
 
-    def off(self):
+    def off(self, emergency=False):
         if not self.relay:
             return
+
+        if not emergency and self.last_off is not None:
+            seconds_on = time.time() - self.last_off
+            if seconds_on < Fridge.MIN_ON_SECONDS:
+                logger.debug(
+                    f"Compressor only ON for {timedelta(seconds=int(seconds_on))}"
+                )
+                return
 
         self.relay.turn_off()
         self.is_on = False
@@ -207,17 +230,11 @@ class Fridge:
                 seconds_since_last_off = time.time() - self.last_off
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"Cooldown in {timedelta(seconds=Fridge.MAX_ON_SECONDS - int(seconds_since_last_off))}"
+                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature ,2)}°C"
                 )
-                logger.debug(
-                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMPERATURE_C - compressor_temperature ,2)}°C"
-                )
-                if (
-                    seconds_since_last_off > Fridge.MAX_ON_SECONDS
-                    or compressor_temperature > Fridge.MAX_COMPRESSOR_TEMPERATURE_C
-                ):
+                if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
-                    self.off()
+                    self.off(emergency=True)
                     logger.info("Cooldown")
             elif self.in_cooldown:
                 time_in_cooldown = int(time.time() - self.last_on)
