@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import time
+import faulthandler
 
 from datetime import timedelta
 from threading import Timer
@@ -67,7 +68,8 @@ class S31Relay:
                     > S31Relay.SUSPICIOUS_TIME_SINCE_KEEPALIVE_S
                 ):
                     logger.error("🤔 We haven't sent keepalive for a while")
-                    raise Exception("We might be stuck somewhere")
+                    faulthandler.dump_traceback()
+                    os._exit(1)
             except TypeError:
                 logger.debug("💡 We didn't send any keepalive yet")
 
