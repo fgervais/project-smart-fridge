@@ -24,7 +24,6 @@ class S31Relay:
         self.state = None
         self.state_requested = None
         self.state_requested_timestamp = None
-        self.state_change_external_callback = None
         self.state_change_timestamp = 0
 
         self.mqtt_client.message_callback_add(
@@ -56,9 +55,6 @@ class S31Relay:
             logger.debug("✔️ Expected relay state change")
         else:
             logger.error("❌ Unrequested relay state change")
-
-        if self.state_change_external_callback:
-            self.state_change_external_callback(self)
 
     def turn_on(self):
         self.set_state("ON")
@@ -100,9 +96,6 @@ class S31Relay:
 
     def keepalive(self):
         self.mqtt_client.publish("fridge-relay/keepalive", True)
-
-    def register_state_event(self, callback):
-        self.state_change_external_callback = callback
 
 
 class Thermostat:
@@ -158,8 +151,6 @@ class Fridge:
         self.thermostat = thermostat
 
         self.in_cooldown = False
-        if self.relay:
-            self.relay.register_state_event(self._relay_state_change_callback)
         if self.thermostat:
             self.thermostat.set_fridge(self)
 
@@ -253,26 +244,6 @@ class Fridge:
 
         return ret
 
-    def _state_correction_callback(self):
-        self.trigger_relay_state_correction = True
-
-    def _relay_state_change_callback(self, relay):
-        logger.debug("Fridge state change callback")
-
-        if not relay.state_matches_requested:
-            if relay.is_on:
-                delay = Fridge.MIN_ON_SECONDS
-            else:
-                delay = Fridge.MIN_OFF_SECONDS
-
-            self.state_correction_timer = Timer(delay, self._state_correction_callback)
-            self.state_correction_timer.start()
-
-    def cancel_state_correction_timer(self):
-        if self.state_correction_timer:
-            self.state_correction_timer.cancel()
-            self.state_correction_timer = None
-
     def ir_frame_to_image(self, frame):
         logger.debug("Converting frame to image")
         frame_array = np.array(frame)
@@ -307,7 +278,6 @@ class Fridge:
                 return
 
         logger.debug("Relay ON")
-        self.cancel_state_correction_timer()
         self.relay.turn_on()
 
     def off(self, emergency=False):
@@ -322,7 +292,6 @@ class Fridge:
                 return
 
         logger.debug("Relay OFF")
-        self.cancel_state_correction_timer()
         self.relay.turn_off()
 
     def run(self):
