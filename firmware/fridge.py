@@ -63,18 +63,18 @@ class S31Relay:
         self.state_change_timestamp = time.time()
 
         if self.state_matches_requested:
-            logger.debug("✓ Expected relay state change")
+            logger.debug("✔️ Expected relay state change")
         else:
-            logger.error("✗ Unrequested relay state change")
+            logger.error("❌ Unrequested relay state change")
 
         if self.state_change_external_callback:
             self.state_change_external_callback(self)
 
     def _state_verification_callback(self):
         if self.state_matches_requested:
-            logger.debug("✓ State changed as expected")
+            logger.debug("✔️ State changed as expected")
         else:
-            logger.error("✗ State did not change")
+            logger.error("❌ State did not change")
 
         self.state_change_timeout_timer = None
         self.set_to_expected_state()
@@ -315,7 +315,7 @@ class Fridge:
             return
 
         if self.compressor_temperature >= Fridge.MAX_COMPRESSOR_START_TEMP_C:
-            logger.debug("Compressor is too hot")
+            logger.debug("🔥 Compressor is too hot")
             return
 
         if not self.relay.is_on:
@@ -355,7 +355,7 @@ class Fridge:
                 if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
                     self.off(emergency=True)
-                    logger.info("Cooldown")
+                    logger.info("🔥 Cooldown")
             elif self.in_cooldown:
                 time_in_cooldown = int(time.time() - self.last_on)
                 logger.debug(f"In cooldown since {timedelta(seconds=time_in_cooldown)}")

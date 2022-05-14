@@ -189,7 +189,7 @@ while True:
 
     kick_watchdog()
 
-    logger.debug("Going to sleep")
+    logger.debug("💤 Going to sleep")
     time.sleep(2)
 
     logger.debug("-" * 40)
