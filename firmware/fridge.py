@@ -86,19 +86,27 @@ class S31Relay:
         self.set_state("OFF")
 
     def set_state(self, state):
-        if self.state_matches_requested != state:
+        if state != self.state:
             self.mqtt_client.publish(
                 "fridge-relay/switch/sonoff_s31_relay/command", state
             )
             self.state_requested = state
             self.state_requested_timestamp = time.time()
 
-            self.state_change_timeout_timer = Timer(
-                Relay.STATE_CHANGE_TIMEOUT_S, self.state_verification_callback
-            )
-            self.state_change_timeout_timer.start()
+            retry = 0
+            while true:
+                if self.state == self.state_requested:
+                    logger.debug("✔️ Requested state is set")
+                    break
+
+                if retry == 10:
+                    logger.error("❌ Relay did not change state")
+                    raise RuntimeError("Relay did not change state")
+
+                logger.debug("⏳ Relay is not yet at state")
+                time.sleep(1)
         else:
-            logger.debug(f"{state} already requested")
+            logger.debug(f"🤔 Fridge is already at {state} ({self.state})")
 
     def set_to_expected_state(self):
         if not self.state_matches_requested:
