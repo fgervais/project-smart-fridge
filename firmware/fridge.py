@@ -262,6 +262,10 @@ class Fridge:
         if not self.relay:
             return
 
+        if self.is_on:
+            logger.debug(f"🤔 Fridge is already ON")
+            return
+
         if self.in_cooldown:
             logger.debug("⏱️ We are in cooldown")
             return
@@ -270,12 +274,11 @@ class Fridge:
             logger.debug("🔥 Compressor is too hot to restart")
             return
 
-        if not self.relay.is_on:
-            if self.relay.seconds_since_last_state_change < Fridge.MIN_OFF_SECONDS:
-                logger.debug(
-                    f"Compressor only OFF for {timedelta(seconds=int(seconds_since_last_off))}"
-                )
-                return
+        if self.relay.seconds_since_last_state_change < Fridge.MIN_OFF_SECONDS:
+            logger.debug(
+                f"Compressor only OFF for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
+            )
+            return
 
         logger.debug("Relay ON")
         self.relay.turn_on()
@@ -284,10 +287,14 @@ class Fridge:
         if not self.relay:
             return
 
-        if not emergency and self.relay.is_on:
+        if not self.is_on:
+            logger.debug(f"🤔 Fridge is already OFF")
+            return
+
+        if not emergency:
             if self.relay.seconds_since_last_state_change < Fridge.MIN_ON_SECONDS:
                 logger.debug(
-                    f"🕐 Compressor only ON for {timedelta(seconds=int(seconds_on))}"
+                    f"🕐 Compressor only ON for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
                 )
                 return
 
@@ -297,7 +304,6 @@ class Fridge:
     def run(self):
         if self.relay:
             if self.is_on:
-                seconds_since_last_off = time.time() - self.last_off
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
                     f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
