@@ -83,7 +83,7 @@ class S31Relay:
                 logger.debug("⏳ Relay is not yet at state")
                 time.sleep(1)
         else:
-            logger.debug(f"🤔 Fridge is already at {state} ({self.state})")
+            logger.debug(f"🤔 Relay is already at {state} ({self.state})")
 
     def set_to_expected_state(self):
         if not self.state_matches_requested:
