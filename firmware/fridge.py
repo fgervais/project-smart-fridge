@@ -51,12 +51,7 @@ class S31Relay:
 
     def _state_change_callback(self, client, userdata, message):
         logger.debug(
-            "Received message '"
-            + str(message.payload)
-            + "' on topic '"
-            + message.topic
-            + "' with QoS "
-            + str(message.qos)
+            f"📝 Received message {message.payload} on topic {message.topic} with QoS {message.qos}"
         )
 
         self.state = str(message.payload)
