@@ -337,7 +337,10 @@ class Fridge:
                 logger.debug(
                     f"🕐 In cooldown since {timedelta(seconds=self.relay.seconds_since_last_state_change)}"
                 )
-                if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
+                if (
+                    self.relay.seconds_since_last_state_change
+                    > Fridge.COOLDOWN_TIME_SECONDS
+                ):
                     self.in_cooldown = False
                     logger.info("!Cooldown")
 
