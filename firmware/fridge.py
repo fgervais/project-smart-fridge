@@ -118,7 +118,7 @@ class Thermostat:
 
         temperature = self.fridge.evaporator_temperature
         logger.debug(
-            f"Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
+            f"🤖 Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
         )
         if self.fridge.is_on and temperature < self.min_t:
             self.fridge.off()
@@ -276,7 +276,7 @@ class Fridge:
 
         if self.relay.seconds_since_last_state_change < Fridge.MIN_OFF_SECONDS:
             logger.debug(
-                f"Compressor only OFF for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
+                f"🕐 Compressor only OFF for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
             )
             return
 
