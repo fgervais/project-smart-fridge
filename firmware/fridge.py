@@ -93,11 +93,12 @@ class S31Relay:
                     logger.debug("✔️ Requested state is set")
                     break
 
-                if retry == 10:
+                if retry >= 10:
                     logger.error("❌ Relay did not change state")
                     raise RuntimeError("Relay did not change state")
 
                 logger.debug("⏳ Relay is not yet at state")
+                retry += 1
                 time.sleep(1)
         else:
             logger.debug(f"🤔 Relay is already at {state} ({self.state})")
