@@ -314,9 +314,8 @@ class Fridge:
                     self.off(emergency=True)
                     logger.info("🔥 Cooldown")
             elif self.in_cooldown:
-                time_in_cooldown = int(time.time() - self.last_on)
                 logger.debug(
-                    f"🕐 In cooldown since {timedelta(seconds=time_in_cooldown)}"
+                    f"🕐 In cooldown since {timedelta(seconds=self.relay.seconds_since_last_state_change)}"
                 )
                 if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
                     self.in_cooldown = False
