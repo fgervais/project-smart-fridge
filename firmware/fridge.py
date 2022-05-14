@@ -174,6 +174,7 @@ class Fridge:
     def discrete_temperature_readings(self):
         readings = []
 
+        logger.debug(f"├── TMP117")
         for i, sensor in enumerate(self.discrete_temperature_sensors):
             if not sensor:
                 break
@@ -181,7 +182,7 @@ class Fridge:
             temp = self._retry(
                 lambda: sensor.temperature, f"Error reading TMP117 ({i})"
             )
-            logger.debug(f"Temperature{i}: {temp}°C")
+            logger.debug(f"│   └── Temperature{i}: {temp}°C")
             readings.append(round(temp, 2))
 
         return readings
@@ -192,7 +193,7 @@ class Fridge:
             lambda: self.compressor_sensor.temperature,
             f"Error reading compressor TMP117",
         )
-        logger.debug(f"Temperature (compressor): {temp}°C")
+        logger.debug(f"├── Temperature (compressor): {temp}°C")
 
         return round(temp, 2)
 
@@ -201,7 +202,7 @@ class Fridge:
         temp = self._retry(
             lambda: self.condenser_sensor.temperature, f"Error reading condenser TMP117"
         )
-        logger.debug(f"Temperature (condenser): {temp}°C")
+        logger.debug(f"├── Temperature (condenser): {temp}°C")
 
         return round(temp, 2)
 
@@ -211,7 +212,7 @@ class Fridge:
             lambda: self.discrete_temperature_sensors[1].temperature,
             f"Error reading condenser TMP117",
         )
-        logger.debug(f"Temperature (evaporator): {temp}°C")
+        logger.debug(f"├── Temperature (evaporator): {temp}°C")
 
         return round(temp, 2)
 
