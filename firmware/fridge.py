@@ -317,7 +317,7 @@ class Fridge:
         if not emergency and self.relay.is_on:
             if self.relay.seconds_since_last_state_change < Fridge.MIN_ON_SECONDS:
                 logger.debug(
-                    f"Compressor only ON for {timedelta(seconds=int(seconds_on))}"
+                    f"🕐 Compressor only ON for {timedelta(seconds=int(seconds_on))}"
                 )
                 return
 
@@ -331,7 +331,7 @@ class Fridge:
                 seconds_since_last_off = time.time() - self.last_off
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature ,2)}°C"
+                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
                 )
                 if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
@@ -339,7 +339,7 @@ class Fridge:
                     logger.info("🔥 Cooldown")
             elif self.in_cooldown:
                 time_in_cooldown = int(time.time() - self.last_on)
-                logger.debug(f"In cooldown since {timedelta(seconds=time_in_cooldown)}")
+                logger.debug(f"🕐 In cooldown since {timedelta(seconds=time_in_cooldown)}")
                 if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
                     self.in_cooldown = False
                     logger.info("!Cooldown")
