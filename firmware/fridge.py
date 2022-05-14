@@ -16,7 +16,7 @@ if "DEBUG" in os.environ:
 
 
 class S31Relay:
-    STATE_CHANGE_TIMEOUT_S = 10
+    SUSPICIOUS_TIME_SINCE_KEEPALIVE_S = 5 * 60
 
     def __init__(self, mqtt_client):
         self.mqtt_client = mqtt_client
@@ -25,6 +25,8 @@ class S31Relay:
         self.state_requested = None
         self.state_requested_timestamp = None
         self.state_change_timestamp = 0
+
+        self.last_keepalive_timestamp = None
 
         self.mqtt_client.message_callback_add(
             "fridge-relay/switch/sonoff_s31_relay/state", self._state_change_callback
@@ -43,6 +45,10 @@ class S31Relay:
     def seconds_since_last_state_change(self):
         return time.time() - self.state_change_timestamp
 
+    @property
+    def seconds_since_last_keepalive(self):
+        return time.time() - self.last_keepalive_timestamp
+
     def _state_change_callback(self, client, userdata, message):
         logger.debug(
             f"📝 Received message {message.payload} on topic {message.topic} with QoS {message.qos}"
@@ -55,6 +61,15 @@ class S31Relay:
             logger.debug("✔️ Expected relay state change")
         else:
             logger.error("❌ Unrequested relay state change")
+            try:
+                if (
+                    self.seconds_since_last_keepalive
+                    > S31Relay.SUSPICIOUS_TIME_SINCE_KEEPALIVE_S
+                ):
+                    logger.error("🤔 We haven't sent keepalive for a while")
+                    raise Exception("We might be stuck somewhere")
+            except TypeError:
+                logger.debug("ℹ️ We didn't send any keepalive yet")
 
     def turn_on(self):
         self.set_state("ON")
@@ -95,7 +110,9 @@ class S31Relay:
             )
 
     def keepalive(self):
+        logger.debug("⚡ Relay keepalive")
         self.mqtt_client.publish("fridge-relay/keepalive", True)
+        self.last_keepalive_timestamp = time.time()
 
 
 class Thermostat:
