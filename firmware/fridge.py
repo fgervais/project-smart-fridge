@@ -69,7 +69,7 @@ class S31Relay:
                     logger.error("🤔 We haven't sent keepalive for a while")
                     raise Exception("We might be stuck somewhere")
             except TypeError:
-                logger.debug("ℹ️ We didn't send any keepalive yet")
+                logger.debug("💡 We didn't send any keepalive yet")
 
     def turn_on(self):
         self.set_state("ON")
@@ -324,7 +324,7 @@ class Fridge:
             if self.is_on:
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"ℹ️ Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
+                    f"💡 Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
                 )
                 if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
