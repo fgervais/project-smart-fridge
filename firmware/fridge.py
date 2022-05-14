@@ -25,7 +25,6 @@ class S31Relay:
         self.state_requested = None
         self.state_requested_timestamp = None
         self.state_change_external_callback = None
-        self.state_change_timeout_timer = None
         self.state_change_timestamp = 0
 
         self.mqtt_client.message_callback_add(
@@ -36,10 +35,6 @@ class S31Relay:
     @property
     def state_matches_requested(self):
         return self.state == self.state_requested
-
-    @property
-    def state_change_pending(self):
-        return self.state_change_timeout_timer is not None
 
     @property
     def is_on(self):
@@ -64,15 +59,6 @@ class S31Relay:
 
         if self.state_change_external_callback:
             self.state_change_external_callback(self)
-
-    def _state_verification_callback(self):
-        if self.state_matches_requested:
-            logger.debug("✔️ State changed as expected")
-        else:
-            logger.error("❌ State did not change")
-
-        self.state_change_timeout_timer = None
-        self.set_to_expected_state()
 
     def turn_on(self):
         self.set_state("ON")
