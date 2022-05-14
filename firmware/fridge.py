@@ -271,7 +271,7 @@ class Fridge:
             return
 
         if self.compressor_temperature >= Fridge.MAX_COMPRESSOR_START_TEMP_C:
-            logger.debug("🔥 Compressor is too hot to restart")
+            logger.debug("🌡️ Compressor is too hot to restart")
             return
 
         if self.relay.seconds_since_last_state_change < Fridge.MIN_OFF_SECONDS:

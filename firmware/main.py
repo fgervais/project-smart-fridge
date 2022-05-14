@@ -192,4 +192,6 @@ while True:
     logger.debug("💤 Going to sleep")
     time.sleep(2)
 
-    logger.debug("-" * 40)
+    logger.debug("")
+    logger.debug(" 🏁 🏁 🏁")
+    logger.debug("")
