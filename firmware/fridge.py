@@ -324,7 +324,7 @@ class Fridge:
             if self.is_on:
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
+                    f"ℹ️ Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
                 )
                 if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
