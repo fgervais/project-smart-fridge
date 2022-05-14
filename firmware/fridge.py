@@ -48,7 +48,7 @@ class S31Relay:
             f"📝 Received message {message.payload} on topic {message.topic} with QoS {message.qos}"
         )
 
-        self.state = str(message.payload)
+        self.state = message.payload.decode("utf-8")
         self.state_change_timestamp = time.time()
 
         if self.state_matches_requested:
