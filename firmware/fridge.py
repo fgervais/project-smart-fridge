@@ -5,10 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import time
-import faulthandler
 
 from datetime import timedelta
-from threading import Timer
 
 
 logger = logging.getLogger(__name__)
@@ -17,8 +15,6 @@ if "DEBUG" in os.environ:
 
 
 class S31Relay:
-    SUSPICIOUS_TIME_SINCE_KEEPALIVE_S = 5 * 60
-
     def __init__(self, mqtt_client):
         self.mqtt_client = mqtt_client
 
@@ -62,16 +58,6 @@ class S31Relay:
             logger.debug("✔️ Expected relay state change")
         else:
             logger.error("❌ Unrequested relay state change")
-            try:
-                if (
-                    self.seconds_since_last_keepalive
-                    > S31Relay.SUSPICIOUS_TIME_SINCE_KEEPALIVE_S
-                ):
-                    logger.error("🤔 We haven't sent keepalive for a while")
-                    faulthandler.dump_traceback()
-                    os._exit(1)
-            except TypeError:
-                logger.debug("💡 We didn't send any keepalive yet")
 
     def turn_on(self):
         self.set_state("ON")

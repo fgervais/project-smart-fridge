@@ -44,4 +44,4 @@ def inc_restart_count():
 
 def reset_restart_count():
     set_restart_count(0)
-    logger.debug("Persistent state reset")
+    logger.debug("✔️ Persistent state reset")
