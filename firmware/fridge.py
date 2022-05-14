@@ -71,7 +71,7 @@ class S31Relay:
             self.state_requested_timestamp = time.time()
 
             retry = 0
-            while true:
+            while True:
                 if self.state == self.state_requested:
                     logger.debug("✔️ Requested state is set")
                     break
