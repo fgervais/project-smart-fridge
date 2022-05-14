@@ -263,11 +263,11 @@ class Fridge:
             return
 
         if self.in_cooldown:
-            logger.debug("We are in cooldown")
+            logger.debug("⏱️ We are in cooldown")
             return
 
         if self.compressor_temperature >= Fridge.MAX_COMPRESSOR_START_TEMP_C:
-            logger.debug("🔥 Compressor is too hot")
+            logger.debug("🔥 Compressor is too hot to restart")
             return
 
         if not self.relay.is_on:
@@ -308,7 +308,9 @@ class Fridge:
                     logger.info("🔥 Cooldown")
             elif self.in_cooldown:
                 time_in_cooldown = int(time.time() - self.last_on)
-                logger.debug(f"🕐 In cooldown since {timedelta(seconds=time_in_cooldown)}")
+                logger.debug(
+                    f"🕐 In cooldown since {timedelta(seconds=time_in_cooldown)}"
+                )
                 if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
                     self.in_cooldown = False
                     logger.info("!Cooldown")
