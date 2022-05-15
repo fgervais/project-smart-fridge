@@ -22,7 +22,8 @@ from fridge import Fridge, Thermostat, S31Relay
 from hass_mqtt_discovery.ha_mqtt_device import Device, Sensor
 
 
-WATCHDOG_TIMEOUT_SEC = 30
+WATCHDOG_TIMEOUT_SEC = 60
+LOOP_SLEEP_SEC = 10
 
 MAX_APP_RESTART_COUNT = 5
 
@@ -184,6 +185,6 @@ while True:
     kick_watchdog()
 
     logger.debug("💤 Going to sleep")
-    time.sleep(5)
+    time.sleep(LOOP_SLEEP_SEC)
 
     logger.debug("─" * 40)
