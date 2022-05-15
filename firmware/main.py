@@ -36,7 +36,7 @@ CONDENSER_TMP117_ADDR = 0x49
 
 # Used by docker-compose down
 def sigterm_handler(signal, frame):
-    logger.info("Reacting to SIGTERM")
+    logger.info("💥 Reacting to SIGTERM")
     teardown()
     sys.exit(0)
 
@@ -54,10 +54,10 @@ def kick_watchdog():
 
 
 def teardown():
-    try:
-        fridge.thermostat.off()
-    except Exception:
-        pass
+    # try:
+    #     fridge.off()
+    # except Exception:
+    #     pass
 
     try:
         client.loop_stop()
