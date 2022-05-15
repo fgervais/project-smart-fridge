@@ -18,14 +18,90 @@ class S31Relay:
     def __init__(self, mqtt_client):
         self.mqtt_client = mqtt_client
 
+        self.state = None
+        self.state_requested = None
+        self.state_requested_timestamp = None
+        self.state_change_timestamp = 0
+
+        self.last_keepalive_timestamp = None
+
+        self.mqtt_client.message_callback_add(
+            "fridge-relay/switch/sonoff_s31_relay/state", self._state_change_callback
+        )
+        self.mqtt_client.subscribe("fridge-relay/switch/sonoff_s31_relay/state")
+
+    @property
+    def state_matches_requested(self):
+        return self.state == self.state_requested
+
+    @property
+    def is_on(self):
+        return self.state == "ON"
+
+    @property
+    def seconds_since_last_state_change(self):
+        return time.time() - self.state_change_timestamp
+
+    @property
+    def seconds_since_last_keepalive(self):
+        return time.time() - self.last_keepalive_timestamp
+
+    def _state_change_callback(self, client, userdata, message):
+        logger.debug(
+            f"📝 Received message {message.payload} on topic {message.topic} with QoS {message.qos}"
+        )
+
+        self.state = message.payload.decode("utf-8")
+        self.state_change_timestamp = time.time()
+
+        if self.state_matches_requested:
+            logger.debug("✔️ Expected relay state change")
+        else:
+            logger.error("❌ Unrequested relay state change")
+
     def turn_on(self):
-        self.mqtt_client.publish("fridge-relay/switch/sonoff_s31_relay/command", "ON")
+        self.set_state("ON")
 
     def turn_off(self):
-        self.mqtt_client.publish("fridge-relay/switch/sonoff_s31_relay/command", "OFF")
+        self.set_state("OFF")
+
+    def set_state(self, state):
+        if state != self.state:
+            self.mqtt_client.publish(
+                "fridge-relay/switch/sonoff_s31_relay/command", state
+            )
+            self.state_requested = state
+            self.state_requested_timestamp = time.time()
+
+            retry = 0
+            while True:
+                if self.state == self.state_requested:
+                    logger.debug("✔️ Requested state is set")
+                    break
+
+                if retry >= 10:
+                    logger.error("❌ Relay did not change state")
+                    raise RuntimeError("Relay did not change state")
+
+                logger.debug("⏳ Relay is not yet at state")
+                retry += 1
+                time.sleep(1)
+        else:
+            logger.debug(f"🤔 Relay is already at {state} ({self.state})")
+
+    def set_to_expected_state(self):
+        if not self.state_matches_requested:
+            logger.info("Resetting relay to expected state")
+            self.set_state(self.state_requested)
+        else:
+            logger.debug(
+                "We we're asked to reset the relay state but it's already fine"
+            )
 
     def keepalive(self):
+        logger.debug("⚡ Relay keepalive")
         self.mqtt_client.publish("fridge-relay/keepalive", True)
+        self.last_keepalive_timestamp = time.time()
 
 
 class Thermostat:
@@ -48,7 +124,7 @@ class Thermostat:
 
         temperature = self.fridge.evaporator_temperature
         logger.debug(
-            f"Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
+            f"🤖 Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
         )
         if self.fridge.is_on and temperature < self.min_t:
             self.fridge.off()
@@ -80,12 +156,12 @@ class Fridge:
         self.relay = relay
         self.thermostat = thermostat
 
-        self.is_on = False
-        self.last_on = None
-        self.last_off = None
         self.in_cooldown = False
         if self.thermostat:
             self.thermostat.set_fridge(self)
+
+        self.state_correction_timer = None
+        self.trigger_relay_state_correction = False
 
     @property
     def ir_frame(self):
@@ -104,6 +180,7 @@ class Fridge:
     def discrete_temperature_readings(self):
         readings = []
 
+        logger.debug(f"├── TMP117")
         for i, sensor in enumerate(self.discrete_temperature_sensors):
             if not sensor:
                 break
@@ -111,7 +188,7 @@ class Fridge:
             temp = self._retry(
                 lambda: sensor.temperature, f"Error reading TMP117 ({i})"
             )
-            logger.debug(f"Temperature{i}: {temp}°C")
+            logger.debug(f"│   └── Temperature{i}: {temp}°C")
             readings.append(round(temp, 2))
 
         return readings
@@ -122,7 +199,7 @@ class Fridge:
             lambda: self.compressor_sensor.temperature,
             f"Error reading compressor TMP117",
         )
-        logger.debug(f"Temperature (compressor): {temp}°C")
+        logger.debug(f"├── Temperature (compressor): {temp}°C")
 
         return round(temp, 2)
 
@@ -131,7 +208,7 @@ class Fridge:
         temp = self._retry(
             lambda: self.condenser_sensor.temperature, f"Error reading condenser TMP117"
         )
-        logger.debug(f"Temperature (condenser): {temp}°C")
+        logger.debug(f"├── Temperature (condenser): {temp}°C")
 
         return round(temp, 2)
 
@@ -141,13 +218,17 @@ class Fridge:
             lambda: self.discrete_temperature_sensors[1].temperature,
             f"Error reading condenser TMP117",
         )
-        logger.debug(f"Temperature (evaporator): {temp}°C")
+        logger.debug(f"├── Temperature (evaporator): {temp}°C")
 
         return round(temp, 2)
 
     @property
     def power_usage(self):
         raise NotImplementedError()
+
+    @property
+    def is_on(self):
+        return self.relay.is_on
 
     def _reset_mcp2221(self, device):
         logger.info("Resetting MCP2221A")
@@ -188,60 +269,68 @@ class Fridge:
         if not self.relay:
             return
 
+        if self.is_on:
+            logger.debug(f"🤔 Fridge is already ON")
+            return
+
         if self.in_cooldown:
-            logger.debug("We are in cooldown")
+            logger.debug("⏱️ We are in cooldown")
             return
 
         if self.compressor_temperature >= Fridge.MAX_COMPRESSOR_START_TEMP_C:
-            logger.debug("Compressor is too hot")
+            logger.debug("🌡️ Compressor is too hot to restart")
             return
 
-        if self.last_on is not None:
-            seconds_off = time.time() - self.last_on
-            if seconds_off < Fridge.MIN_OFF_SECONDS:
-                logger.debug(
-                    f"Compressor only OFF for {timedelta(seconds=int(seconds_since_last_off))}"
-                )
-                return
+        if self.relay.seconds_since_last_state_change < Fridge.MIN_OFF_SECONDS:
+            logger.debug(
+                f"🕐 Compressor only OFF for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
+            )
+            return
 
+        logger.debug("Relay ON")
         self.relay.turn_on()
-        self.is_on = True
-        self.last_off = time.time()
 
     def off(self, emergency=False):
         if not self.relay:
             return
 
-        if not emergency and self.last_off is not None:
-            seconds_on = time.time() - self.last_off
-            if seconds_on < Fridge.MIN_ON_SECONDS:
+        if not self.is_on:
+            logger.debug(f"🤔 Fridge is already OFF")
+            return
+
+        if not emergency:
+            if self.relay.seconds_since_last_state_change < Fridge.MIN_ON_SECONDS:
                 logger.debug(
-                    f"Compressor only ON for {timedelta(seconds=int(seconds_on))}"
+                    f"🕐 Compressor only ON for {timedelta(seconds=int(self.relay.seconds_since_last_state_change))}"
                 )
                 return
 
+        logger.debug("Relay OFF")
         self.relay.turn_off()
-        self.is_on = False
-        self.last_on = time.time()
 
     def run(self):
         if self.relay:
             if self.is_on:
-                seconds_since_last_off = time.time() - self.last_off
                 compressor_temperature = self.compressor_temperature
                 logger.debug(
-                    f"Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature ,2)}°C"
+                    f"💡 Allowed compressor ΔT: {round(Fridge.MAX_COMPRESSOR_TEMP_C - compressor_temperature, 2)}°C"
                 )
                 if compressor_temperature > Fridge.MAX_COMPRESSOR_TEMP_C:
                     self.in_cooldown = True
                     self.off(emergency=True)
-                    logger.info("Cooldown")
+                    logger.info("🔥 Cooldown")
             elif self.in_cooldown:
-                time_in_cooldown = int(time.time() - self.last_on)
-                logger.debug(f"In cooldown since {timedelta(seconds=time_in_cooldown)}")
-                if time_in_cooldown > Fridge.COOLDOWN_TIME_SECONDS:
+                logger.debug(
+                    f"🕐 In cooldown since {timedelta(seconds=self.relay.seconds_since_last_state_change)}"
+                )
+                if (
+                    self.relay.seconds_since_last_state_change
+                    > Fridge.COOLDOWN_TIME_SECONDS
+                ):
                     self.in_cooldown = False
                     logger.info("!Cooldown")
+
+            self.trigger_relay_state_correction
 
         if self.thermostat:
             self.thermostat.run()

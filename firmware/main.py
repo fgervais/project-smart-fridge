@@ -1,6 +1,7 @@
 import asyncio
 import board
 import busio
+import faulthandler
 import forensic
 import hid
 import logging
@@ -21,7 +22,8 @@ from fridge import Fridge, Thermostat, S31Relay
 from hass_mqtt_discovery.ha_mqtt_device import Device, Sensor
 
 
-WATCHDOG_TIMEOUT_SEC = 30
+WATCHDOG_TIMEOUT_SEC = 60
+LOOP_SLEEP_SEC = 10
 
 MAX_APP_RESTART_COUNT = 5
 
@@ -34,7 +36,7 @@ CONDENSER_TMP117_ADDR = 0x49
 
 # Used by docker-compose down
 def sigterm_handler(signal, frame):
-    logger.info("Reacting to SIGTERM")
+    logger.info("💥 Reacting to SIGTERM")
     teardown()
     sys.exit(0)
 
@@ -46,24 +48,16 @@ def hang(signal, frame):
         time.sleep(1)
 
 
-# This will not interrupt pure C code:
-# https://docs.python.org/3/library/signal.html#execution-of-python-signal-handlers
-def alarm_signal_handler(signal, frame):
-    logger.error("Watchdog interrupt!")
-    logger.error("".join(traceback.format_stack(frame)))
-    sys.exit(1)
-
-
 def kick_watchdog():
-    logger.debug("Watchdog kick")
-    signal.alarm(WATCHDOG_TIMEOUT_SEC)
+    logger.debug("🐶 Watchdog kick")
+    faulthandler.dump_traceback_later(WATCHDOG_TIMEOUT_SEC, exit=True)
 
 
 def teardown():
-    try:
-        fridge.thermostat.off()
-    except Exception:
-        pass
+    # try:
+    #     fridge.off()
+    # except Exception:
+    #     pass
 
     try:
         client.loop_stop()
@@ -88,7 +82,8 @@ if "DEBUG" in os.environ:
 
 signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGUSR2, hang)
-signal.signal(signal.SIGALRM, alarm_signal_handler)
+
+kick_watchdog()
 
 pstate = persistent_state.load()
 pstate["restart_count"] += 1
@@ -189,7 +184,7 @@ while True:
 
     kick_watchdog()
 
-    logger.debug("Going to sleep")
-    time.sleep(2)
+    logger.debug("💤 Going to sleep")
+    time.sleep(LOOP_SLEEP_SEC)
 
-    logger.debug("-" * 40)
+    logger.debug("─" * 40)
