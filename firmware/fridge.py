@@ -132,9 +132,7 @@ class Thermostat:
             if temperature < self.min_t or waterproof_temperature < self.min_wp_t:
                 self.fridge.off()
         elif not self.fridge.is_on:
-            if temperature > self.max_t and waterproof_temperature > (
-                self.min_wp_t + 0.2
-            ):
+            if temperature > self.max_t and waterproof_temperature > self.min_wp_t:
                 self.fridge.on()
 
 
