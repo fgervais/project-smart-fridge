@@ -166,8 +166,8 @@ class Fridge:
         if self.thermostat:
             self.thermostat.set_fridge(self)
 
-        self.state_correction_timer = None
-        self.trigger_relay_state_correction = False
+        self.waterproof_temperature_cache = None
+        self.waterproof_temperature_cache_timestamp = 0
 
     @property
     def ir_frame(self):
@@ -230,10 +230,19 @@ class Fridge:
 
     @property
     def waterproof_temperature(self):
-        temp = self._retry(
-            lambda: self.waterproof_sensor.temperature,
-            f"Error reading waterproof TMP117",
-        )
+        if (
+            self.waterproof_temperature_cache
+            and (time.time() - self.waterproof_temperature_cache_timestamp) < 10
+        ):
+            temp = self.waterproof_temperature_cache
+        else:
+            temp = self._retry(
+                lambda: self.waterproof_sensor.temperature,
+                f"Error reading waterproof TMP117",
+            )
+            self.waterproof_temperature_cache = temp
+            self.waterproof_temperature_cache_timestamp = time.time()
+
         logger.debug(f"├── Temperature (waterproof): {temp}°C")
 
         return round(temp, 2)
@@ -345,8 +354,6 @@ class Fridge:
                 ):
                     self.in_cooldown = False
                     logger.info("!Cooldown")
-
-            self.trigger_relay_state_correction
 
         if self.thermostat:
             self.thermostat.run()

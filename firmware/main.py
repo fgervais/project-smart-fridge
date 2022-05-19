@@ -132,7 +132,6 @@ if ds18b20:
         unit_of_measurement="°C",
         topic_parent_level="inside",
     )
-    ds18b20_sensor.set_value_read_function(lambda: round(ds18b20.temperature, 2))
 
 plt.style.use("dark_background")
 
@@ -174,7 +173,7 @@ while True:
     client.publish(f"outside/side/temperature", fridge.condenser_temperature)
 
     if ds18b20:
-        ds18b20_sensor.send()
+        ds18b20_sensor.send(fridge.waterproof_temperature)
 
     relay.keepalive()
     fridge.run()
