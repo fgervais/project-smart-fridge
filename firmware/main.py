@@ -144,11 +144,13 @@ relay = S31Relay(client)
 # thermostat = Thermostat(relay, inside_tmp117[1], min_t=-7, max_t=-1)  # Max
 
 # thermostat = Thermostat(min_t=-9, max_t=-3) # Beer = 1.69°C
-thermostat = Thermostat(min_t=-11, max_t=-5) # Beer = 0.44°C
+thermostat = Thermostat(min_t=-11, max_t=-5)  # Beer = 0.44°C
 # thermostat = Thermostat(min_t=-13, max_t=-7) # Beer = -1.94°C
 # thermostat = Thermostat(min_t=-15, max_t=-9) # Beer = -3.75°C
 
-fridge = Fridge(mlx, inside_tmp117, compressor_tmp117, condenser_tmp117, relay, thermostat)
+fridge = Fridge(
+    mlx, inside_tmp117, compressor_tmp117, condenser_tmp117, ds18b20, relay, thermostat
+)
 
 kick_watchdog()
 logger.info("We are online!")

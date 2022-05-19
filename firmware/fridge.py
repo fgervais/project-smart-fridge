@@ -105,10 +105,11 @@ class S31Relay:
 
 
 class Thermostat:
-    def __init__(self, min_t=-5, max_t=2):
+    def __init__(self, min_t=-5, max_t=2, min_wp_t=-3):
         self.fridge = None
         self.min_t = min_t
         self.max_t = max_t
+        self.min_wp_t = min_wp_t
 
     def set_fridge(self, fridge):
         self.fridge = fridge
@@ -123,13 +124,18 @@ class Thermostat:
             return
 
         temperature = self.fridge.evaporator_temperature
-        logger.debug(
-            f"🤖 Thermostat ({'ON' if self.fridge.is_on else 'OFF'}) ({self.min_t} < {temperature} < {self.max_t})"
-        )
-        if self.fridge.is_on and temperature < self.min_t:
-            self.fridge.off()
-        elif not self.fridge.is_on and temperature > self.max_t:
-            self.fridge.on()
+        waterproof_temperature = self.fridge.waterproof_temperature
+        logger.debug(f"🤖 Thermostat ({'ON' if self.fridge.is_on else 'OFF'})")
+        logger.debug(f"   └──  t({self.min_t} < {temperature} < {self.max_t})")
+        logger.debug(f"   └── wp({self.min_wp_t} < {waterproof_temperature})")
+        if self.fridge.is_on:
+            if temperature < self.min_t or waterproof_temperature < self.min_wp_t:
+                self.fridge.off()
+        elif not self.fridge.is_on:
+            if temperature > self.max_t and waterproof_temperature > (
+                self.min_wp_t + 0.2
+            ):
+                self.fridge.on()
 
 
 class Fridge:
@@ -146,6 +152,7 @@ class Fridge:
         discrete_temperature_sensors,
         compressor_sensor,
         condenser_sensor,
+        waterproof_sensor,
         relay=None,
         thermostat=None,
     ):
@@ -153,6 +160,7 @@ class Fridge:
         self.discrete_temperature_sensors = discrete_temperature_sensors
         self.compressor_sensor = compressor_sensor
         self.condenser_sensor = condenser_sensor
+        self.waterproof_sensor = waterproof_sensor
         self.relay = relay
         self.thermostat = thermostat
 
@@ -219,6 +227,16 @@ class Fridge:
             f"Error reading condenser TMP117",
         )
         logger.debug(f"├── Temperature (evaporator): {temp}°C")
+
+        return round(temp, 2)
+
+    @property
+    def waterproof_temperature(self):
+        temp = self._retry(
+            lambda: self.waterproof_sensor.temperature,
+            f"Error reading waterproof TMP117",
+        )
+        logger.debug(f"├── Temperature (waterproof): {temp}°C")
 
         return round(temp, 2)
 
