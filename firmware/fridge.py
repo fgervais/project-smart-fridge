@@ -125,7 +125,7 @@ class Thermostat:
 
         temperature = self.fridge.evaporator_temperature
         waterproof_temperature = self.fridge.waterproof_temperature
-        logger.debug(f"🤖 Thermostat ({'ON' if self.fridge.is_on else 'OFF'})")
+        logger.debug(f"🤖 Thermostat {'❄️' if self.fridge.is_on else '🚫'}")
         logger.debug(f"   └──  t({self.min_t} < {temperature} < {self.max_t})")
         logger.debug(f"   └── wp({self.min_wp_t} < {waterproof_temperature})")
         if self.fridge.is_on:
