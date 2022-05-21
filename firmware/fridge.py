@@ -125,11 +125,15 @@ class Thermostat:
 
         temperature = self.fridge.evaporator_temperature
         waterproof_temperature = self.fridge.waterproof_temperature
+        shelf1_temperature = self.fridge.shelf1_temperature
+
         logger.debug(f"🤖 Thermostat {'❄️' if self.fridge.is_on else '🚫'}")
         logger.debug(f"   └──  t({self.min_t} < {temperature} < {self.max_t})")
         logger.debug(f"   └── wp({self.min_wp_t} < {waterproof_temperature})")
+        logger.debug(f"   └── s1({0} < {shelf1_temperature})")
+
         if self.fridge.is_on:
-            if temperature < self.min_t or waterproof_temperature < self.min_wp_t:
+            if temperature < self.min_t or waterproof_temperature < self.min_wp_t or shelf1_temperature < 0:
                 self.fridge.off()
         elif not self.fridge.is_on:
             if temperature > self.max_t and waterproof_temperature > self.min_wp_t:
@@ -244,6 +248,16 @@ class Fridge:
             self.waterproof_temperature_cache_timestamp = time.time()
 
         logger.debug(f"├── Temperature (waterproof): {temp}°C")
+
+        return round(temp, 2)
+
+    @property
+    def shelf1_temperature(self):
+        temp = self._retry(
+            lambda: self.discrete_temperature_sensors[0].temperature,
+            f"Error reading condenser TMP117",
+        )
+        logger.debug(f"├── Temperature (shelf1): {temp}°C")
 
         return round(temp, 2)
 
