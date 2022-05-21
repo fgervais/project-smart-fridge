@@ -105,7 +105,7 @@ class S31Relay:
 
 
 class Thermostat:
-    def __init__(self, min_t=-5, max_t=2, min_wp_t=-3):
+    def __init__(self, min_t=-5, max_t=2, min_wp_t=-1):
         self.fridge = None
         self.min_t = min_t
         self.max_t = max_t
