@@ -1,6 +1,6 @@
 [submodule "firmware/ds2482"]
 	path = firmware/ds2482
-	url = git@github.com:fgervais/ds2482.git
+	url = https://github.com/fgervais/ds2482.git
 [submodule "firmware/hass-mqtt-discovery"]
 	path = firmware/hass_mqtt_discovery
-	url = git@github.com:fgervais/hass-mqtt-discovery.git
+	url = https://github.com/fgervais/hass-mqtt-discovery.git
