@@ -5,40 +5,41 @@ FROM base AS python_build
 RUN apt-get update && apt-get -y install --no-install-recommends \
 	build-essential \
 	ca-certificates \
-	git \
+	libffi-dev \
+	libssl-dev \
 	zlib1g-dev
-RUN git clone https://github.com/python/cpython.git
-RUN cd cpython && \
-	git checkout v3.9.5 && \
-	./configure --prefix=$(pwd)/_install && make && make install
+COPY cpython /cpython/
+RUN cd /cpython && \
+	./configure --prefix=/usr/local && make && make install
 
 FROM base AS python
-# /usr/local/bin/python
-COPY --from=python_build /cpython/_install /usr/local/
+COPY --from=python_build /usr/local /usr/local/
 
-# FROM base AS build
-# RUN apt-get update && apt-get -y install --no-install-recommends \
-# 	build-essential \
-# 	git \
-# 	libusb-1.0 \
-# 	libudev-dev
-# RUN pip install \
-# 	poetry==1.2.0a2
-# WORKDIR /app
-# COPY pyproject.toml poetry.lock ./
-# RUN POETRY_VIRTUALENVS_IN_PROJECT=true \
-# 	poetry install
+FROM python AS poetry
+RUN apt-get update && apt-get -y install --no-install-recommends \
+	build-essential \
+	ca-certificates \
+	git \
+	libusb-1.0 \
+	libudev-dev
+RUN pip3 install \
+	poetry==1.1.13
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+RUN POETRY_VIRTUALENVS_IN_PROJECT=true \
+	poetry install
 
-# FROM base AS dev
-# RUN apt-get update && apt-get -y install --no-install-recommends \
-# 	libnss-mdns \
-# 	libusb-1.0
-# WORKDIR /app
-# COPY --from=build /app/.venv ./.venv/
-# COPY
-# ENV PYTHONUNBUFFERED=1
-# ENV PATH=/app/.venv/bin:$PATH
-# CMD ["python", "main.py"]
+FROM python AS dev
+RUN apt-get update && apt-get -y install --no-install-recommends \
+	libnss-mdns \
+	libusb-1.0
+WORKDIR /app
+COPY --from=poetry /app/.venv ./.venv/
+ENV PYTHONUNBUFFERED=1
+ENV PATH=/app/.venv/bin:$PATH
+CMD ["python", "main.py"]
 
-# FROM dev
-# COPY . /app/
+FROM dev
+COPY *.py ./
+COPY ds2482 ./ds2482/
+COPY hass_mqtt_discovery ./hass_mqtt_discovery/
