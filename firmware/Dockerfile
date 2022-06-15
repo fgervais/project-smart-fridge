@@ -41,5 +41,6 @@ CMD ["python", "main.py"]
 
 FROM dev
 COPY *.py ./
+COPY *.yaml ./
 COPY ds2482 ./ds2482/
 COPY hass_mqtt_discovery ./hass_mqtt_discovery/
