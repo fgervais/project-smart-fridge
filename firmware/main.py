@@ -142,10 +142,8 @@ relay = S31Relay(client)
 # thermostat = Thermostat(relay, inside_tmp117[1]) # Middle
 # thermostat = Thermostat(relay, inside_tmp117[1], min_t=-7, max_t=-1)  # Max
 
-# thermostat = Thermostat(min_t=-9, max_t=-3) # Beer = 1.69°C
-thermostat = Thermostat(min_t=-11, max_t=-5)  # Beer = 0.44°C
-# thermostat = Thermostat(min_t=-13, max_t=-7) # Beer = -1.94°C
-# thermostat = Thermostat(min_t=-15, max_t=-9) # Beer = -3.75°C
+# thermostat = Thermostat(min_t=-12, max_t=-5)
+thermostat = Thermostat(min_t=-14, max_t=-5)
 
 # thermostat = DefrostThermostat()
 
