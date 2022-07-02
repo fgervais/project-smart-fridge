@@ -140,6 +140,37 @@ class Thermostat:
                 self.fridge.on()
 
 
+class DefrostThermostat:
+    def __init__(self, min_t=5, max_t=15):
+        self.fridge = None
+        self.min_t = min_t
+        self.max_t = max_t
+
+    def set_fridge(self, fridge):
+        self.fridge = fridge
+
+        if self.fridge.evaporator_temperature > self.max_t:
+            self.fridge.on()
+        else:
+            self.fridge.off()
+
+    def run(self):
+        if not self.fridge:
+            return
+
+        temperature = self.fridge.evaporator_temperature
+
+        logger.debug(f"🤖 Thermostat {'❄️' if self.fridge.is_on else '🚫'}")
+        logger.debug(f"   └──  t({self.min_t} < {temperature} < {self.max_t})")
+
+        if self.fridge.is_on:
+            if temperature < self.min_t:
+                self.fridge.off()
+        elif not self.fridge.is_on:
+            if temperature > self.max_t:
+                self.fridge.on()
+
+
 class Fridge:
     COOLDOWN_TIME_SECONDS = 10 * 60
     MIN_ON_SECONDS = 5 * 60

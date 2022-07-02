@@ -18,7 +18,7 @@ from pprint import pprint
 import i2c_helper
 import persistent_state
 
-from fridge import Fridge, Thermostat, S31Relay
+from fridge import Fridge, Thermostat, DefrostThermostat, S31Relay
 from hass_mqtt_discovery.ha_mqtt_device import Device, Sensor
 
 
@@ -146,6 +146,8 @@ relay = S31Relay(client)
 thermostat = Thermostat(min_t=-11, max_t=-5)  # Beer = 0.44°C
 # thermostat = Thermostat(min_t=-13, max_t=-7) # Beer = -1.94°C
 # thermostat = Thermostat(min_t=-15, max_t=-9) # Beer = -3.75°C
+
+# thermostat = DefrostThermostat()
 
 fridge = Fridge(
     mlx, inside_tmp117, compressor_tmp117, condenser_tmp117, ds18b20, relay, thermostat
