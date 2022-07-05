@@ -127,13 +127,30 @@ class Thermostat:
         waterproof_temperature = self.fridge.waterproof_temperature
         shelf1_temperature = self.fridge.shelf1_temperature
 
+        coldest_beers_temp = self.fridge.ir_frame[10:18, 2:8]
+        # np.set_printoptions(precision=1, linewidth=np.inf)
+        # logger.debug(f"\n{coldest_beers_temp.round(1)}")
+        logger.debug(
+            "🍺 min:{}, max:{}, avg:{}".format(
+                round(np.min(coldest_beers_temp), 2),
+                round(np.max(coldest_beers_temp), 2),
+                round(np.average(coldest_beers_temp), 2),
+            )
+        )
+
         logger.debug(f"🤖 Thermostat {'❄️' if self.fridge.is_on else '🚫'}")
         logger.debug(f"   └──  t({self.min_t} < {temperature} < {self.max_t})")
         logger.debug(f"   └── wp({self.min_wp_t} < {waterproof_temperature})")
         logger.debug(f"   └── s1({0} < {shelf1_temperature})")
+        logger.debug(f"   └── beer avg({-1.5} < {round(np.average(coldest_beers_temp), 2)})")
 
         if self.fridge.is_on:
-            if temperature < self.min_t or waterproof_temperature < self.min_wp_t or shelf1_temperature < 0:
+            if (
+                temperature < self.min_t
+                or waterproof_temperature < self.min_wp_t
+                or shelf1_temperature < 0
+                or np.average(coldest_beers_temp) < -1.5
+            ):
                 self.fridge.off()
         elif not self.fridge.is_on:
             if temperature > self.max_t and waterproof_temperature > self.min_wp_t:
@@ -204,12 +221,32 @@ class Fridge:
         self.waterproof_temperature_cache = None
         self.waterproof_temperature_cache_timestamp = 0
 
+        self.ir_frame_cache = None
+        self.ir_frame_cache_timestamp = 0
+
     @property
     def ir_frame(self):
-        frame = [0] * 768
+        if (
+            self.ir_frame_cache is not None
+            and (time.time() - self.ir_frame_cache_timestamp) < 10
+        ):
+            frame = self.ir_frame_cache
+        else:
+            frame_query_buffer = [0] * 768
 
-        logger.debug("Getting frame")
-        self._retry(lambda: self.ir_camera.getFrame(frame), "Could not read mlx frame")
+            logger.debug("Getting frame")
+            self._retry(
+                lambda: self.ir_camera.getFrame(frame_query_buffer),
+                "Could not read mlx frame",
+            )
+            frame_array = np.array(frame_query_buffer)
+            frame_array = np.reshape(frame_array, (-1, 32))
+            frame_array = np.fliplr(frame_array)
+
+            frame = frame_array
+
+            self.ir_frame_cache = frame_array
+            self.ir_frame_cache_timestamp = time.time()
 
         return frame
 
@@ -323,11 +360,7 @@ class Fridge:
 
     def ir_frame_to_image(self, frame):
         logger.debug("Converting frame to image")
-        frame_array = np.array(frame)
-        frame_array = np.reshape(frame_array, (-1, 32))
-        frame_array = np.fliplr(frame_array)
-
-        im = plt.imshow(frame_array)
+        im = plt.imshow(frame)
         plt.colorbar(im)
         image = io.BytesIO()
         plt.savefig(image, format="png")
