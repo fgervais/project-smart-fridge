@@ -334,6 +334,12 @@ class Fridge:
         return round(np.average(coldest_beers_temp), 2)
 
     @property
+    def ir_self1_temperature(self):
+        temp = self.ir_frame[6, 28]
+
+        return round(temp, 2)
+
+    @property
     def power_usage(self):
         raise NotImplementedError()
 

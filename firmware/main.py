@@ -139,6 +139,13 @@ coldest_beer_sensor = Sensor(
     unit_of_measurement="°C",
     topic_parent_level="inside",
 )
+ir_self1_sensor = Sensor(
+    client,
+    "ir_shelf1",
+    parent_device=fridge_device,
+    unit_of_measurement="°C",
+    topic_parent_level="inside",
+)
 
 plt.style.use("dark_background")
 
@@ -183,6 +190,7 @@ while True:
         ds18b20_sensor.send(fridge.waterproof_temperature)
 
     coldest_beer_sensor.send(fridge.coldest_beer_temperature)
+    ir_self1_sensor.send(fridge.ir_self1_temperature)
 
     relay.keepalive()
     fridge.run()
