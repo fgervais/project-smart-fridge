@@ -132,6 +132,13 @@ if ds18b20:
         unit_of_measurement="°C",
         topic_parent_level="inside",
     )
+coldest_beer_sensor = Sensor(
+    client,
+    "coldest_beer",
+    parent_device=fridge_device,
+    unit_of_measurement="°C",
+    topic_parent_level="inside",
+)
 
 plt.style.use("dark_background")
 
@@ -174,6 +181,8 @@ while True:
 
     if ds18b20:
         ds18b20_sensor.send(fridge.waterproof_temperature)
+
+    coldest_beer_sensor.send(fridge.coldest_beer_temperature)
 
     relay.keepalive()
     fridge.run()
