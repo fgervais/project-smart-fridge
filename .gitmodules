@@ -4,3 +4,6 @@
 [submodule "firmware/hass-mqtt-discovery"]
 	path = firmware/hass_mqtt_discovery
 	url = https://github.com/fgervais/hass-mqtt-discovery.git
+[submodule "firmware/cpython"]
+	path = firmware/cpython
+	url = https://github.com/python/cpython.git
