@@ -1,14 +1,16 @@
 version: "3.4"
+# version: "3.7"
 services:
   fridge:
     build:
       context: .
     image: fridge
+    # init: true
     environment:
       - BLINKA_MCP2221=1
       # Negative number = Do not reset on device init
       - BLINKA_MCP2221_RESET_DELAY=-1
-      # - DEBUG=1
+      - DEBUG=1
     devices:
       - /dev/bus/usb
     volumes:
@@ -16,7 +18,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - persistent-state:/persistent_state
     network_mode: "host"
-    # restart: always
+    restart: always
 
 volumes:
   persistent-state:
