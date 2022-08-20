@@ -181,7 +181,7 @@ class Fridge:
     COOLDOWN_TIME_SECONDS = 10 * 60
     MIN_ON_SECONDS = 5 * 60
     MIN_OFF_SECONDS = 5 * 60
-    MAX_COMPRESSOR_TEMP_C = 60
+    MAX_COMPRESSOR_TEMP_C = 63
     # Temperature over which the compressor won't be turned on.
     MAX_COMPRESSOR_START_TEMP_C = MAX_COMPRESSOR_TEMP_C - 5
 
