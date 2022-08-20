@@ -1,11 +1,9 @@
 version: "3.4"
-# version: "3.7"
 services:
   fridge:
     build:
       context: .
     image: fridge
-    # init: true
     environment:
       - BLINKA_MCP2221=1
       # Negative number = Do not reset on device init
